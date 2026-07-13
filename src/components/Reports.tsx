@@ -10,6 +10,8 @@ import {
   Pie,
   Cell,
   Legend,
+  Line,
+  CartesianGrid,
 } from "recharts";
 import type { Item, Transaction } from "../lib/mockData";
 
@@ -47,49 +49,87 @@ function customTooltip({ active, payload, label }: any) {
   );
 }
 
-const dailyData = [
-  { date: "Jul 5", boxes: 27, value: 15472 },
-  { date: "Jul 6", boxes: 33, value: 18380 },
-  { date: "Jul 7", boxes: 24, value: 14460 },
-  { date: "Jul 8", boxes: 20, value: 19320 },
-];
+type ReportPeriod = "daily" | "weekly" | "monthly";
 
-const weeklyData = [
-  { week: "Jun W3", boxes: 120, value: 95000 },
-  { week: "Jun W4", boxes: 148, value: 112000 },
-  { week: "Jul W1", boxes: 135, value: 104000 },
-  { week: "Jul W2", boxes: 104, value: 67632 },
-];
+type ChartDatum = {
+  label: string;
+  boxes: number;
+  value: number;
+  sortKey: string;
+};
 
-const monthlyData = [
-  { month: "Mar", boxes: 580, value: 430000 },
-  { month: "Apr", boxes: 620, value: 475000 },
-  { month: "May", boxes: 710, value: 558000 },
-  { month: "Jun", boxes: 540, value: 408000 },
-  { month: "Jul", boxes: 104, value: 67632 },
-];
+function getPeriodKey(date: string, period: ReportPeriod) {
+  const parsed = new Date(`${date}T00:00:00`);
+
+  if (period === "daily") {
+    return parsed.toISOString().slice(0, 10);
+  }
+
+  if (period === "weekly") {
+    const weekStart = new Date(parsed);
+    const day = weekStart.getDay();
+    const diff = day === 0 ? -6 : 1 - day;
+    weekStart.setDate(weekStart.getDate() + diff);
+    return `${weekStart.getFullYear()}-${String(weekStart.getMonth() + 1).padStart(2, "0")}-${String(weekStart.getDate()).padStart(2, "0")}`;
+  }
+
+  return `${parsed.getFullYear()}-${String(parsed.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function getPeriodLabel(date: string, period: ReportPeriod) {
+  const parsed = new Date(`${date}T00:00:00`);
+
+  if (period === "daily") {
+    return parsed.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+  }
+
+  if (period === "weekly") {
+    const weekStart = new Date(parsed);
+    const day = weekStart.getDay();
+    const diff = day === 0 ? -6 : 1 - day;
+    weekStart.setDate(weekStart.getDate() + diff);
+    return `Week of ${weekStart.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    })}`;
+  }
+
+  return parsed.toLocaleDateString("en-US", {
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function buildChartData(transactions: Transaction[], period: ReportPeriod) {
+  const buckets = new Map<string, ChartDatum>();
+
+  transactions.forEach((transaction) => {
+    const key = getPeriodKey(transaction.date, period);
+    const label = getPeriodLabel(transaction.date, period);
+    const existing = buckets.get(key) ?? {
+      label,
+      boxes: 0,
+      value: 0,
+      sortKey: key,
+    };
+
+    existing.boxes += transaction.rows.reduce((sum, row) => sum + row.boxes, 0);
+    existing.value += transaction.grandTotal;
+    buckets.set(key, existing);
+  });
+
+  return Array.from(buckets.values()).sort((a, b) =>
+    a.sortKey.localeCompare(b.sortKey),
+  );
+}
 
 export default function Reports({ items, transactions }: ReportsProps) {
-  const [period, setPeriod] = useState<"daily" | "weekly" | "monthly">("daily");
+  const [period, setPeriod] = useState<ReportPeriod>("daily");
 
-  const chartData: Array<{ label: string; boxes: number; value: number }> =
-    period === "daily"
-      ? dailyData.map((d) => ({
-          label: d.date,
-          boxes: d.boxes,
-          value: d.value,
-        }))
-      : period === "weekly"
-        ? weeklyData.map((d) => ({
-            label: d.week,
-            boxes: d.boxes,
-            value: d.value,
-          }))
-        : monthlyData.map((d) => ({
-            label: d.month,
-            boxes: d.boxes,
-            value: d.value,
-          }));
+  const chartData = buildChartData(transactions, period);
   const xKey = "label";
 
   // Most distributed items from transactions
@@ -253,13 +293,13 @@ export default function Reports({ items, transactions }: ReportsProps) {
             className="text-sm font-semibold mb-1"
             style={{ color: "var(--foreground)" }}
           >
-            Boxes Distributed
+            Distribution & Revenue Trend
           </h3>
           <p
             className="text-xs mb-5"
             style={{ color: "var(--muted-foreground)" }}
           >
-            Number of boxes given to bar per{" "}
+            Live distribution and revenue by{" "}
             {period === "daily"
               ? "day"
               : period === "weekly"
@@ -267,7 +307,8 @@ export default function Reports({ items, transactions }: ReportsProps) {
                 : "month"}
           </p>
           <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={chartData} barSize={32}>
+            <BarChart data={chartData} barSize={28}>
+              <CartesianGrid stroke="rgba(255,255,255,0.06)" vertical={false} />
               <XAxis
                 dataKey={xKey}
                 tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
@@ -275,6 +316,14 @@ export default function Reports({ items, transactions }: ReportsProps) {
                 tickLine={false}
               />
               <YAxis
+                yAxisId="left"
+                tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis
+                yAxisId="right"
+                orientation="right"
                 tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
                 axisLine={false}
                 tickLine={false}
@@ -284,10 +333,20 @@ export default function Reports({ items, transactions }: ReportsProps) {
                 cursor={{ fill: "rgba(255,255,255,0.03)" }}
               />
               <Bar
+                yAxisId="left"
                 dataKey="boxes"
                 name="Boxes"
                 fill="var(--primary)"
                 radius={[4, 4, 0, 0]}
+              />
+              <Line
+                yAxisId="right"
+                type="monotone"
+                dataKey="value"
+                name="Revenue (Birr)"
+                stroke="#f59e0b"
+                strokeWidth={2}
+                dot={{ r: 3 }}
               />
             </BarChart>
           </ResponsiveContainer>
