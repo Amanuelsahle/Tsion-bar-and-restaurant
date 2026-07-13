@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { Item, Transaction } from "../lib/mockData";
 import { BAR_MANAGERS } from "../lib/mockData";
+import { openReceiptWindow } from "../lib/receipt";
 
 interface GiveToBarProps {
   items: Item[];
@@ -63,13 +64,66 @@ export default function GiveToBar({ items, onSave }: GiveToBarProps) {
       setSaved(txn);
       setShowReceipt(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save distribution.");
+      setError(
+        err instanceof Error ? err.message : "Failed to save distribution.",
+      );
     } finally {
       setSubmitting(false);
     }
   }
 
   if (showReceipt && saved) {
+    const handlePrintReceipt = () => {
+      const receiptHtml = `
+        <div class="container">
+          <div class="header">
+            <p class="title">Tsion Bar & Restaurant</p>
+            <p class="subtitle">Bar Distribution Receipt</p>
+            <div class="meta">
+              <div><strong>Date:</strong> ${saved.date}</div>
+              <div><strong>Receipt No:</strong> ${saved.id}</div>
+              <div><strong>Bar Manager:</strong> ${saved.barMan}</div>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Boxes</th>
+                <th>Qty/Box</th>
+                <th>Price/Unit</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${saved.rows
+                .map((row) => {
+                  const item = items.find((it) => it.id === row.itemId);
+                  const total = item
+                    ? row.boxes * item.qtyPerBox * item.pricePerUnit
+                    : 0;
+                  return `
+                  <tr>
+                    <td>${item?.name ?? ""}</td>
+                    <td>${row.boxes}</td>
+                    <td>${item?.qtyPerBox ?? 0}</td>
+                    <td>${item?.pricePerUnit ?? 0} Birr</td>
+                    <td>${total.toLocaleString()} Birr</td>
+                  </tr>
+                `;
+                })
+                .join("")}
+            </tbody>
+          </table>
+          <div class="grand-total">
+            <span>Grand Total</span>
+            <span>${saved.grandTotal.toLocaleString()} Birr</span>
+          </div>
+        </div>
+      `;
+      openReceiptWindow("Receipt", receiptHtml);
+    };
+
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-4">
@@ -237,7 +291,7 @@ export default function GiveToBar({ items, onSave }: GiveToBarProps) {
           </div>
           <div className="px-6 pb-6 flex gap-3">
             <button
-              onClick={() => window.print()}
+              onClick={handlePrintReceipt}
               className="px-5 py-2.5 rounded-xl text-sm font-semibold"
               style={{
                 background: "linear-gradient(135deg, #c9a84c, #a07828)",
@@ -247,6 +301,7 @@ export default function GiveToBar({ items, onSave }: GiveToBarProps) {
               Print Receipt
             </button>
             <button
+              onClick={handlePrintReceipt}
               className="px-5 py-2.5 rounded-xl text-sm font-medium"
               style={{
                 backgroundColor: "var(--secondary)",
@@ -539,7 +594,9 @@ export default function GiveToBar({ items, onSave }: GiveToBarProps) {
                   ? "#0f1117"
                   : "var(--muted-foreground)",
               cursor:
-                barMan && validRows.length > 0 && !submitting ? "pointer" : "not-allowed",
+                barMan && validRows.length > 0 && !submitting
+                  ? "pointer"
+                  : "not-allowed",
             }}
           >
             {submitting ? "Saving..." : "Save & Generate Receipt"}

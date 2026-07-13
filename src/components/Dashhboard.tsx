@@ -99,6 +99,8 @@ export default function Dashboard({
   const beerTypes = items.filter((i) => i.category === "Beer").length;
   const softTypes = items.filter((i) => i.category === "Soft Drink").length;
   const waterTypes = items.filter((i) => i.category === "Water").length;
+  const wineTypes = items.filter((i) => i.category === "Wine").length;
+  const liqueurTypes = items.filter((i) => i.category === "Liqueurs").length;
   const lowStock = items.filter((i) => i.currentBoxes < i.minThreshold);
   const todayTxns = transactions.filter((t) => t.date === "2026-07-08");
   const boxesToday = todayTxns.reduce(
@@ -163,6 +165,8 @@ export default function Dashboard({
         <StatCard label="Beer Types" value={beerTypes} />
         <StatCard label="Soft Drinks" value={softTypes} />
         <StatCard label="Water Types" value={waterTypes} />
+        <StatCard label="Wine Types" value={wineTypes} />
+        <StatCard label="Liqueurs Types" value={liqueurTypes} />
         <StatCard
           label="Total Boxes"
           value={totalBoxes}

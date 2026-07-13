@@ -1,4 +1,4 @@
-export type Category = "Beer" | "Soft Drink" | "Water";
+export type Category = "Beer" | "Soft Drink" | "Water" | "Wine" | "Liqueurs";
 
 export interface Item {
   id: string;
@@ -36,12 +36,7 @@ export interface StockHistory {
   note: string;
 }
 
-export const BAR_MANAGERS = [
-  "Selam Tesfaye",
-  "Biniam Haile",
-  "Meron Alemu",
-  "Yonas Bekele",
-];
+export const BAR_MANAGERS = ["Main Manager", "Assistant Manager"];
 
 export const initialItems: Item[] = [
   {
@@ -142,6 +137,24 @@ export const initialItems: Item[] = [
     pricePerUnit: 22,
     currentBoxes: 55,
     minThreshold: 15,
+  },
+  {
+    id: "12",
+    name: "Kenyan Red Wine",
+    category: "Wine",
+    qtyPerBox: 12,
+    pricePerUnit: 180,
+    currentBoxes: 20,
+    minThreshold: 5,
+  },
+  {
+    id: "13",
+    name: "Hennessy VS",
+    category: "Liqueurs",
+    qtyPerBox: 750,
+    pricePerUnit: 2600,
+    currentBoxes: 15,
+    minThreshold: 5,
   },
 ];
 

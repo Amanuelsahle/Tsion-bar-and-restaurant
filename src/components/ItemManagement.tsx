@@ -8,11 +8,19 @@ interface ItemManagementProps {
   onDelete: (id: string) => void;
 }
 
-const CATEGORIES: Category[] = ["Beer", "Soft Drink", "Water"];
+const CATEGORIES: Category[] = [
+  "Beer",
+  "Soft Drink",
+  "Water",
+  "Wine",
+  "Liqueurs",
+];
 const CAT_COLORS: Record<Category, string> = {
   Beer: "#f59e0b",
   "Soft Drink": "#3b82f6",
   Water: "#06b6d4",
+  Wine: "#8b5cf6",
+  Liqueurs: "#ec4899",
 };
 
 const emptyForm = {
@@ -38,6 +46,7 @@ export default function ItemManagement({
 
   const filtered =
     filter === "All" ? items : items.filter((i) => i.category === filter);
+  const showBottleMetrics = filter === "Liqueurs";
 
   function openAdd() {
     setEditing(null);
@@ -135,10 +144,10 @@ export default function ItemManagement({
                 {[
                   "Item Name",
                   "Category",
-                  "Qty/Box",
+                  showBottleMetrics ? "Ounces/Bottle" : "Qty/Box",
                   "Price/Unit (Birr)",
-                  "Boxes in Store",
-                  "Units Total",
+                  showBottleMetrics ? "Current Bottles" : "Boxes in Store",
+                  showBottleMetrics ? "Ounces Total" : "Units Total",
                   "Min Threshold",
                   "Actions",
                 ].map((h) => (
@@ -364,7 +373,9 @@ export default function ItemManagement({
                   className="text-xs font-medium"
                   style={{ color: "var(--muted-foreground)" }}
                 >
-                  Qty Per Box
+                  {form.category === "Liqueurs"
+                    ? "Ounces per Bottle"
+                    : "Qty Per Box"}
                 </label>
                 <input
                   type="number"
@@ -418,7 +429,9 @@ export default function ItemManagement({
                   className="text-xs font-medium"
                   style={{ color: "var(--muted-foreground)" }}
                 >
-                  Current Boxes
+                  {form.category === "Liqueurs"
+                    ? "Current Bottles"
+                    : "Current Boxes"}
                 </label>
                 <input
                   type="number"

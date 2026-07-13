@@ -134,6 +134,18 @@ export default function Reports({ items, transactions }: ReportsProps) {
         .filter((i) => i.category === "Water")
         .reduce((s, i) => s + i.currentBoxes, 0),
     },
+    {
+      name: "Wine",
+      value: items
+        .filter((i) => i.category === "Wine")
+        .reduce((s, i) => s + i.currentBoxes, 0),
+    },
+    {
+      name: "Liqueurs",
+      value: items
+        .filter((i) => i.category === "Liqueurs")
+        .reduce((s, i) => s + i.currentBoxes, 0),
+    },
   ];
 
   return (

@@ -9,6 +9,8 @@ const CAT_COLORS: Record<Category, string> = {
   Beer: "#f59e0b",
   "Soft Drink": "#3b82f6",
   Water: "#06b6d4",
+  Wine: "#8b5cf6",
+  Liqueurs: "#ec4899",
 };
 
 export default function Inventory({ items }: InventoryProps) {
@@ -18,6 +20,7 @@ export default function Inventory({ items }: InventoryProps) {
   const filtered = items
     .filter((i) => filter === "All" || i.category === filter)
     .filter((i) => !showLowOnly || i.currentBoxes < i.minThreshold);
+  const showBottleMetrics = filter === "Liqueurs";
 
   const totalBoxes = items.reduce((s, i) => s + i.currentBoxes, 0);
   const totalUnits = items.reduce(
@@ -51,14 +54,14 @@ export default function Inventory({ items }: InventoryProps) {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           {
-            label: "Total Boxes",
+            label: showBottleMetrics ? "Total Bottles" : "Total Boxes",
             value: totalBoxes.toLocaleString(),
-            unit: "boxes",
+            unit: showBottleMetrics ? "bottles" : "boxes",
           },
           {
-            label: "Total Units",
+            label: showBottleMetrics ? "Total Ounces" : "Total Units",
             value: totalUnits.toLocaleString(),
-            unit: "units",
+            unit: showBottleMetrics ? "ounces" : "units",
           },
           {
             label: "Low Stock Items",
@@ -109,7 +112,9 @@ export default function Inventory({ items }: InventoryProps) {
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex gap-2">
-          {(["All", "Beer", "Soft Drink", "Water"] as const).map((cat) => (
+          {(
+            ["All", "Beer", "Soft Drink", "Water", "Wine", "Liqueurs"] as const
+          ).map((cat) => (
             <button
               key={cat}
               onClick={() => setFilter(cat as any)}
@@ -163,8 +168,8 @@ export default function Inventory({ items }: InventoryProps) {
                 {[
                   "Item",
                   "Category",
-                  "Boxes Remaining",
-                  "Units Remaining",
+                  showBottleMetrics ? "Current Bottles" : "Boxes Remaining",
+                  showBottleMetrics ? "Ounces Remaining" : "Units Remaining",
                   "Price/Unit",
                   "Value",
                   "Status",

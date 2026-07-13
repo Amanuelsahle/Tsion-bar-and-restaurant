@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { Item, Transaction } from "../lib/mockData";
 import { BAR_MANAGERS } from "../lib/mockData";
+import { openReceiptWindow } from "../lib/receipt";
 
 interface DistributionHistoryProps {
   transactions: Transaction[];
@@ -33,6 +34,57 @@ export default function DistributionHistory({
     });
 
   if (detail) {
+    const handlePrintReceipt = () => {
+      const receiptHtml = `
+        <div class="container">
+          <div class="header">
+            <p class="title">Tsion Bar & Restaurant</p>
+            <p class="subtitle">Bar Distribution Receipt</p>
+            <div class="meta">
+              <div><strong>Date:</strong> ${detail.date}</div>
+              <div><strong>Receipt No:</strong> ${detail.id}</div>
+              <div><strong>Bar Manager:</strong> ${detail.barMan}</div>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Boxes</th>
+                <th>Qty/Box</th>
+                <th>Price/Unit</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${detail.rows
+                .map((row) => {
+                  const item = items.find((it) => it.id === row.itemId);
+                  const qtyPerBox = row.qtyPerBox ?? item?.qtyPerBox ?? 0;
+                  const unitPrice = row.unitPrice ?? item?.pricePerUnit ?? 0;
+                  const total = row.total ?? qtyPerBox * unitPrice * row.boxes;
+                  return `
+                  <tr>
+                    <td>${item?.name ?? row.itemId}</td>
+                    <td>${row.boxes}</td>
+                    <td>${qtyPerBox}</td>
+                    <td>${unitPrice.toLocaleString()} Birr</td>
+                    <td>${total.toLocaleString()} Birr</td>
+                  </tr>
+                `;
+                })
+                .join("")}
+            </tbody>
+          </table>
+          <div class="grand-total">
+            <span>Grand Total</span>
+            <span>${detail.grandTotal.toLocaleString()} Birr</span>
+          </div>
+        </div>
+      `;
+      openReceiptWindow("Transaction Receipt", receiptHtml);
+    };
+
     return (
       <div className="space-y-6 max-w-2xl">
         <div className="flex items-center gap-4">
@@ -197,7 +249,7 @@ export default function DistributionHistory({
           </div>
           <div className="px-6 pb-6 flex gap-3">
             <button
-              onClick={() => window.print()}
+              onClick={handlePrintReceipt}
               className="px-5 py-2.5 rounded-xl text-sm font-semibold"
               style={{
                 background: "linear-gradient(135deg, #c9a84c, #a07828)",
@@ -207,6 +259,7 @@ export default function DistributionHistory({
               Print
             </button>
             <button
+              onClick={handlePrintReceipt}
               className="px-5 py-2.5 rounded-xl text-sm font-medium"
               style={{
                 backgroundColor: "var(--secondary)",
