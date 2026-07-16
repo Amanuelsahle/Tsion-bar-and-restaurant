@@ -49,6 +49,7 @@ export default function DashboardPage() {
   const [role] = useState<Role>("manager");
   const [currentPage, setCurrentPage] = useState<PageId>("dashboard");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [items, setItems] = useState<Item[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [stockHistory, setStockHistory] = useState<StockHistory[]>([]);
@@ -115,6 +116,7 @@ export default function DashboardPage() {
 
   const handleNavigate = (page: string) => {
     setCurrentPage(page as PageId);
+    setMobileMenuOpen(false);
   };
 
   const handleLogout = async () => {
@@ -345,25 +347,55 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-[#0f1117] text-[#e8e6e1]">
-      <Sidebar
-        currentPage={currentPage}
-        onNavigate={handleNavigate}
-        role={role}
-        collapsed={sidebarCollapsed}
-        onToggle={() => setSidebarCollapsed((prev) => !prev)}
-      />
+      <div className="lg:hidden">
+        <Sidebar
+          currentPage={currentPage}
+          onNavigate={handleNavigate}
+          role={role}
+          collapsed={false}
+          onToggle={() => setMobileMenuOpen((prev) => !prev)}
+          mobileOpen={mobileMenuOpen}
+          onCloseMobile={() => setMobileMenuOpen(false)}
+        />
+      </div>
+
+      <div className="hidden lg:block">
+        <Sidebar
+          currentPage={currentPage}
+          onNavigate={handleNavigate}
+          role={role}
+          collapsed={sidebarCollapsed}
+          onToggle={() => setSidebarCollapsed((prev) => !prev)}
+        />
+      </div>
 
       <div
         className="min-h-screen transition-all duration-300"
-        style={{ paddingLeft: sidebarCollapsed ? 64 : 220 }}
+        style={{
+          paddingLeft:
+            typeof window !== "undefined" && window.innerWidth >= 1024
+              ? sidebarCollapsed
+                ? 64
+                : 220
+              : 0,
+        }}
       >
         <Navbar
-          sidebarWidth={sidebarCollapsed ? 64 : 220}
+          sidebarWidth={
+            typeof window !== "undefined" && window.innerWidth >= 1024
+              ? sidebarCollapsed
+                ? 64
+                : 220
+              : 0
+          }
           role={role}
           onLogout={handleLogout}
+          onOpenMenu={() => setMobileMenuOpen(true)}
         />
 
-        <main className="px-6 py-6 pt-20">{renderPage()}</main>
+        <main className="px-3 py-4 pt-28 sm:px-4 sm:pt-32 lg:px-6 lg:py-6 lg:pt-28">
+          {renderPage()}
+        </main>
       </div>
     </div>
   );

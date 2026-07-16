@@ -263,7 +263,7 @@ export default function StoreManagement({
                     backgroundColor: "rgba(255,255,255,0.01)",
                   }}
                 >
-                  {["Date", "Item", "Type", "Boxes", "Note"].map((h) => (
+                  {["Date", "Item", "Type", "Boxes"].map((h) => (
                     <th
                       key={h}
                       className="px-5 py-3.5 text-left text-xs font-medium uppercase tracking-wider"
@@ -330,12 +330,6 @@ export default function StoreManagement({
                       >
                         {sh.type === "in" ? "+" : "-"}
                         {sh.boxes}
-                      </td>
-                      <td
-                        className="px-5 py-3.5 text-xs"
-                        style={{ color: "var(--muted-foreground)" }}
-                      >
-                        {sh.note}
                       </td>
                     </tr>
                   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   getCashierReports,
   type CashierReportRecord,
@@ -12,6 +12,7 @@ export default function CashierReports() {
   const [selectedReport, setSelectedReport] =
     useState<CashierReportRecord | null>(null);
   const [cashierFilter, setCashierFilter] = useState("all");
+  const detailsRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const loadReports = async () => {
@@ -27,6 +28,21 @@ export default function CashierReports() {
 
     void loadReports();
   }, []);
+
+  useEffect(() => {
+    if (!selectedReport || typeof window === "undefined") return;
+
+    if (window.innerWidth >= 768) return;
+
+    const timer = window.setTimeout(() => {
+      detailsRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 120);
+
+    return () => window.clearTimeout(timer);
+  }, [selectedReport]);
 
   const filteredReports = useMemo(() => {
     if (cashierFilter === "all") return reports;
@@ -91,7 +107,7 @@ export default function CashierReports() {
   return (
     <div className="space-y-6">
       <div
-        className="rounded-3xl border p-6"
+        className="rounded-3xl border p-4 sm:p-6"
         style={{ borderColor: "var(--border)", backgroundColor: "var(--card)" }}
       >
         <div className="flex flex-wrap items-start justify-between gap-4">
@@ -112,7 +128,7 @@ export default function CashierReports() {
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <div
-              className="rounded-2xl px-4 py-3"
+              className="w-full rounded-2xl px-4 py-3 sm:w-auto"
               style={{ backgroundColor: "rgba(255,255,255,0.04)" }}
             >
               <p
@@ -273,7 +289,8 @@ export default function CashierReports() {
         </div>
 
         <div
-          className="rounded-3xl border p-6"
+          ref={detailsRef}
+          className="rounded-3xl border p-4 sm:p-6"
           style={{
             borderColor: "var(--border)",
             backgroundColor: "var(--card)",

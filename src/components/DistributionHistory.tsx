@@ -22,13 +22,42 @@ export default function DistributionHistory({
   const [rangeTotal, setRangeTotal] = useState<number | null>(null);
   const [rangeError, setRangeError] = useState("");
 
+  const getBarManagerDisplayName = (value: string) => {
+    const normalized = value.trim().toLowerCase();
+
+    if (!normalized) {
+      return "Bar Manager";
+    }
+
+    if (normalized.includes("assistant")) {
+      return "Assistant Manager";
+    }
+
+    const isUuid =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+        value.trim(),
+      );
+
+    if (
+      isUuid ||
+      normalized.includes("bar") ||
+      normalized.includes("manager")
+    ) {
+      return "Bar Manager";
+    }
+
+    return value;
+  };
+
   const filtered = transactions
     .filter((t) => {
-      const matchBarMan = !filterBarMan || t.barMan === filterBarMan;
+      const barManagerDisplayName = getBarManagerDisplayName(t.barMan);
+      const matchBarMan =
+        !filterBarMan || barManagerDisplayName === filterBarMan;
       const matchDate = !filterDate || t.date === filterDate;
       const matchSearch =
         !search ||
-        t.barMan.toLowerCase().includes(search.toLowerCase()) ||
+        barManagerDisplayName.toLowerCase().includes(search.toLowerCase()) ||
         t.id.toLowerCase().includes(search.toLowerCase());
       return matchBarMan && matchDate && matchSearch;
     })
@@ -193,7 +222,7 @@ export default function DistributionHistory({
                   className="font-semibold mt-1"
                   style={{ color: "var(--foreground)" }}
                 >
-                  {detail.barMan}
+                  {getBarManagerDisplayName(detail.barMan)}
                 </p>
               </div>
             </div>
@@ -352,7 +381,7 @@ export default function DistributionHistory({
           }}
         >
           <option value="">All Bar Managers</option>
-          {BAR_MANAGERS.map((bm) => (
+          {["Bar Manager", "Assistant Manager", ...BAR_MANAGERS].map((bm) => (
             <option key={bm} value={bm}>
               {bm}
             </option>
@@ -539,20 +568,20 @@ export default function DistributionHistory({
                 }}
               >
                 {[
-                  "Date",
-                  "Receipt No",
-                  "Bar Manager",
-                  "Items",
-                  "Grand Total",
-                  "Status",
-                  "",
+                  { label: "Date" },
+                  { label: "Receipt No", hideOnMobile: true },
+                  { label: "Bar Manager" },
+                  { label: "Items", hideOnMobile: true },
+                  { label: "Grand Total" },
+                  { label: "Status" },
+                  { label: "" },
                 ].map((h) => (
                   <th
-                    key={h}
-                    className="px-5 py-3.5 text-left text-xs font-medium uppercase tracking-wider"
+                    key={h.label}
+                    className={`px-5 py-3.5 text-left text-xs font-medium uppercase tracking-wider ${h.hideOnMobile ? "hidden sm:table-cell" : ""}`}
                     style={{ color: "var(--muted-foreground)" }}
                   >
-                    {h}
+                    {h.label}
                   </th>
                 ))}
               </tr>
@@ -583,7 +612,7 @@ export default function DistributionHistory({
                     {txn.date}
                   </td>
                   <td
-                    className="px-5 py-4 font-mono text-xs"
+                    className="hidden sm:table-cell px-5 py-4 font-mono text-xs"
                     style={{ color: "var(--primary)" }}
                   >
                     {txn.id}
@@ -592,10 +621,10 @@ export default function DistributionHistory({
                     className="px-5 py-4 font-medium"
                     style={{ color: "var(--foreground)" }}
                   >
-                    {txn.barMan}
+                    {getBarManagerDisplayName(txn.barMan)}
                   </td>
                   <td
-                    className="px-5 py-4"
+                    className="hidden sm:table-cell px-5 py-4"
                     style={{ color: "var(--muted-foreground)" }}
                   >
                     {txn.rows

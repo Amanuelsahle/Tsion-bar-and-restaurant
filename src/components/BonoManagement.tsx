@@ -162,7 +162,7 @@ export default function BonoManagement() {
   return (
     <div className="space-y-6">
       <div
-        className="rounded-3xl border p-6"
+        className="rounded-3xl border p-4 sm:p-6"
         style={{ borderColor: "var(--border)", backgroundColor: "var(--card)" }}
       >
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -183,7 +183,7 @@ export default function BonoManagement() {
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <div
-              className="rounded-2xl px-4 py-3"
+              className="w-full rounded-2xl px-4 py-3 sm:w-auto"
               style={{ backgroundColor: "rgba(201,168,76,0.12)" }}
             >
               <p
@@ -200,7 +200,7 @@ export default function BonoManagement() {
               </p>
             </div>
             <div
-              className="rounded-2xl px-4 py-3"
+              className="w-full rounded-2xl px-4 py-3 sm:w-auto"
               style={{ backgroundColor: "rgba(255,255,255,0.04)" }}
             >
               <p
@@ -322,7 +322,7 @@ export default function BonoManagement() {
 
           <form
             onSubmit={handleSubmit}
-            className="mt-4 grid gap-4 md:grid-cols-[2fr_1fr_1fr_1fr_auto]"
+            className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-[2fr_1fr_1fr_1fr_auto]"
           >
             <div>
               <label
@@ -415,7 +415,7 @@ export default function BonoManagement() {
                 <option value="inactive">Inactive</option>
               </select>
             </div>
-            <div className="flex items-end gap-2">
+            <div className="flex items-end gap-2 sm:col-span-2 xl:col-span-1">
               <button
                 type="submit"
                 disabled={saving}
@@ -554,7 +554,7 @@ export default function BonoManagement() {
                       {(bono.quantity * bono.price).toLocaleString()} Birr
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex gap-2">
+                      <div className="flex flex-wrap gap-2">
                         <button
                           onClick={() => handleEdit(bono)}
                           className="rounded-lg px-3 py-1.5 text-sm"

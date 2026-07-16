@@ -154,7 +154,7 @@ export default function CashierCheckout() {
 
   return (
     <div
-      className="rounded-3xl border p-6"
+      className="rounded-3xl border p-4 sm:p-6"
       style={{ borderColor: "var(--border)", backgroundColor: "var(--card)" }}
     >
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -192,7 +192,7 @@ export default function CashierCheckout() {
         </div>
       </div>
 
-      <div className="mt-6 grid gap-3 md:grid-cols-4">
+      <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <div
           className="rounded-2xl border px-4 py-3"
           style={{ borderColor: "var(--border)" }}
@@ -354,7 +354,7 @@ export default function CashierCheckout() {
                         onChange={(event) =>
                           updateInput(row.id, "additional", event.target.value)
                         }
-                        className="w-24 rounded-lg px-2 py-2 text-sm outline-none"
+                        className="w-full min-w-[90px] rounded-lg px-2 py-2 text-sm outline-none sm:w-24"
                         style={{
                           backgroundColor: "var(--secondary)",
                           border: "1px solid var(--border)",
@@ -370,7 +370,7 @@ export default function CashierCheckout() {
                         onChange={(event) =>
                           updateInput(row.id, "remaining", event.target.value)
                         }
-                        className="w-24 rounded-lg px-2 py-2 text-sm outline-none"
+                        className="w-full min-w-[90px] rounded-lg px-2 py-2 text-sm outline-none sm:w-24"
                         style={{
                           backgroundColor: "var(--secondary)",
                           border: "1px solid var(--border)",
@@ -444,7 +444,7 @@ export default function CashierCheckout() {
                     min="0"
                     value={specialPayouts}
                     onChange={(event) => setSpecialPayouts(event.target.value)}
-                    className="w-32 rounded-lg px-2 py-2 text-sm outline-none"
+                    className="w-full min-w-[120px] rounded-lg px-2 py-2 text-sm outline-none sm:w-32"
                     style={{
                       backgroundColor: "var(--secondary)",
                       border: "1px solid var(--border)",
@@ -475,7 +475,7 @@ export default function CashierCheckout() {
                     min="0"
                     value={todayMoney}
                     onChange={(event) => setTodayMoney(event.target.value)}
-                    className="w-32 rounded-lg px-2 py-2 text-sm outline-none"
+                    className="w-full min-w-[120px] rounded-lg px-2 py-2 text-sm outline-none sm:w-32"
                     style={{
                       backgroundColor: "var(--secondary)",
                       border: "1px solid var(--border)",
@@ -526,7 +526,7 @@ export default function CashierCheckout() {
         </div>
       </div>
 
-      <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
           Additional bono values are temporary and will not change the saved
           bono database entries.
