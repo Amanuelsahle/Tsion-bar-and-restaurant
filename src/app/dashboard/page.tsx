@@ -11,6 +11,7 @@ import StoreManagement from "../../components/StoreManagement";
 import GiveToBar from "../../components/GiveToBar";
 import DistributionHistory from "../../components/DistributionHistory";
 import Reports from "../../components/Reports";
+import BonoManagement from "../../components/BonoManagement";
 import {
   createDistribution,
   createProduct,
@@ -307,29 +308,7 @@ export default function DashboardPage() {
       case "reports":
         return <Reports items={items} transactions={transactions} />;
       case "cashier":
-        return (
-          <div
-            className="rounded-3xl border p-8"
-            style={{
-              borderColor: "var(--border)",
-              backgroundColor: "var(--card)",
-            }}
-          >
-            <h2
-              className="text-2xl font-bold font-display"
-              style={{ color: "var(--foreground)" }}
-            >
-              Cashier Balance Management
-            </h2>
-            <p
-              className="mt-3 text-sm"
-              style={{ color: "var(--muted-foreground)" }}
-            >
-              This section will be used for night cash balance tracking and
-              cashier-related operations.
-            </p>
-          </div>
-        );
+        return <BonoManagement />;
       default:
         return (
           <Dashboard

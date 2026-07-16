@@ -52,6 +52,16 @@ create table if not exists public.distribution_items (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.cashier_bonos (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  quantity integer not null default 0,
+  price numeric(12,2) not null default 0,
+  is_active boolean not null default true,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql
@@ -79,6 +89,7 @@ alter table public.products enable row level security;
 alter table public.stock_movements enable row level security;
 alter table public.distributions enable row level security;
 alter table public.distribution_items enable row level security;
+alter table public.cashier_bonos enable row level security;
 
 create policy "Users can view own profile" on public.profiles
 for select using (auth.uid() = id);
@@ -99,6 +110,10 @@ for all using (auth.role() = 'authenticated')
 with check (auth.role() = 'authenticated');
 
 create policy "Authenticated users can manage distribution items" on public.distribution_items
+for all using (auth.role() = 'authenticated')
+with check (auth.role() = 'authenticated');
+
+create policy "Authenticated users can manage cashier bonos" on public.cashier_bonos
 for all using (auth.role() = 'authenticated')
 with check (auth.role() = 'authenticated');
 

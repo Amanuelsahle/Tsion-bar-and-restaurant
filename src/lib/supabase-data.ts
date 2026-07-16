@@ -1,5 +1,84 @@
 import { supabase } from "./supabase";
 
+export type BonoRecord = {
+  id: string;
+  name: string;
+  quantity: number;
+  price: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type CashierSettingRecord = {
+  id: string;
+  key: string;
+  value: number;
+  created_at: string;
+  updated_at: string;
+};
+
+const BONO_STORAGE_KEY = "tsion-cashier-bonos";
+const CASHIER_SETTING_STORAGE_KEY = "tsion-cashier-settings";
+
+function getLocalBonos(): BonoRecord[] {
+  if (typeof window === "undefined") return [];
+
+  try {
+    const stored = window.localStorage.getItem(BONO_STORAGE_KEY);
+    if (!stored) return [];
+
+    const parsed = JSON.parse(stored);
+    return Array.isArray(parsed) ? (parsed as BonoRecord[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveLocalBonos(bonos: BonoRecord[]) {
+  if (typeof window === "undefined") return;
+
+  window.localStorage.setItem(BONO_STORAGE_KEY, JSON.stringify(bonos));
+}
+
+function getLocalSettings(): CashierSettingRecord[] {
+  if (typeof window === "undefined") return [];
+
+  try {
+    const stored = window.localStorage.getItem(CASHIER_SETTING_STORAGE_KEY);
+    if (!stored) return [];
+
+    const parsed = JSON.parse(stored);
+    return Array.isArray(parsed) ? (parsed as CashierSettingRecord[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveLocalSettings(settings: CashierSettingRecord[]) {
+  if (typeof window === "undefined") return;
+
+  window.localStorage.setItem(
+    CASHIER_SETTING_STORAGE_KEY,
+    JSON.stringify(settings),
+  );
+}
+
+function isRemotePersistenceError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error ?? "");
+  const status =
+    typeof error === "object" && error && "status" in error
+      ? String((error as { status?: unknown }).status ?? "")
+      : "";
+
+  return (
+    status === "404" ||
+    message.toLowerCase().includes("does not exist") ||
+    message.toLowerCase().includes("relation") ||
+    message.toLowerCase().includes("not found")
+  );
+}
+
 export type ProductRecord = {
   id: string;
   name: string;
@@ -41,6 +120,237 @@ export type DistributionItemRecord = {
   total: number;
   created_at: string;
 };
+
+export async function getBonos() {
+  if (!supabase) return getLocalBonos();
+
+  try {
+    const { data, error } = await supabase
+      .from("cashier_bonos")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      if (isRemotePersistenceError(error)) {
+        return getLocalBonos();
+      }
+      throw error;
+    }
+
+    const bonos = (data ?? []) as BonoRecord[];
+    saveLocalBonos(bonos);
+    return bonos;
+  } catch {
+    return getLocalBonos();
+  }
+}
+
+export async function createBono(
+  bono: Omit<BonoRecord, "id" | "created_at" | "updated_at">,
+) {
+  const now = new Date().toISOString();
+  const localBono: BonoRecord = {
+    id: `local-${Date.now()}`,
+    created_at: now,
+    updated_at: now,
+    ...bono,
+  };
+
+  if (!supabase) {
+    const next = [localBono, ...getLocalBonos()];
+    saveLocalBonos(next);
+    return localBono;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("cashier_bonos")
+      .insert(bono)
+      .select("*")
+      .single();
+
+    if (error) {
+      if (isRemotePersistenceError(error)) {
+        const next = [localBono, ...getLocalBonos()];
+        saveLocalBonos(next);
+        return localBono;
+      }
+      throw error;
+    }
+
+    const saved = data as BonoRecord;
+    const next = [
+      saved,
+      ...getLocalBonos().filter((item) => item.id !== saved.id),
+    ];
+    saveLocalBonos(next);
+    return saved;
+  } catch {
+    const next = [localBono, ...getLocalBonos()];
+    saveLocalBonos(next);
+    return localBono;
+  }
+}
+
+export async function updateBono(
+  id: string,
+  updates: Partial<Omit<BonoRecord, "id" | "created_at" | "updated_at">>,
+) {
+  const now = new Date().toISOString();
+  const existing = getLocalBonos().find((item) => item.id === id);
+  const localBono: BonoRecord = {
+    id,
+    name: updates.name ?? existing?.name ?? "",
+    quantity: updates.quantity ?? existing?.quantity ?? 0,
+    price: updates.price ?? existing?.price ?? 0,
+    is_active: updates.is_active ?? existing?.is_active ?? true,
+    created_at: existing?.created_at ?? now,
+    updated_at: now,
+  };
+
+  if (!supabase) {
+    const next = [
+      localBono,
+      ...getLocalBonos().filter((item) => item.id !== id),
+    ];
+    saveLocalBonos(next);
+    return localBono;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("cashier_bonos")
+      .update(updates)
+      .eq("id", id)
+      .select("*")
+      .single();
+
+    if (error) {
+      if (isRemotePersistenceError(error)) {
+        const next = [
+          localBono,
+          ...getLocalBonos().filter((item) => item.id !== id),
+        ];
+        saveLocalBonos(next);
+        return localBono;
+      }
+      throw error;
+    }
+
+    const saved = data as BonoRecord;
+    const next = [
+      saved,
+      ...getLocalBonos().filter((item) => item.id !== saved.id),
+    ];
+    saveLocalBonos(next);
+    return saved;
+  } catch {
+    const next = [
+      localBono,
+      ...getLocalBonos().filter((item) => item.id !== id),
+    ];
+    saveLocalBonos(next);
+    return localBono;
+  }
+}
+
+export async function deleteBono(id: string) {
+  const current = getLocalBonos().filter((item) => item.id !== id);
+  saveLocalBonos(current);
+
+  if (!supabase) return;
+
+  try {
+    const { error } = await supabase
+      .from("cashier_bonos")
+      .delete()
+      .eq("id", id);
+    if (error && !isRemotePersistenceError(error)) {
+      throw error;
+    }
+  } catch {
+    saveLocalBonos(current);
+  }
+}
+
+export async function getCashierSetting(key: string) {
+  if (!supabase) {
+    const setting = getLocalSettings().find((item) => item.key === key);
+    return setting?.value ?? 0;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("cashier_settings")
+      .select("*")
+      .eq("key", key)
+      .maybeSingle();
+
+    if (error) {
+      if (isRemotePersistenceError(error)) {
+        const setting = getLocalSettings().find((item) => item.key === key);
+        return setting?.value ?? 0;
+      }
+      throw error;
+    }
+
+    const value = data?.value ?? 0;
+    const current = getLocalSettings();
+    const next = current.filter((item) => item.key !== key);
+    next.push({
+      id: data?.id ?? `local-${key}`,
+      key,
+      value,
+      created_at: data?.created_at ?? new Date().toISOString(),
+      updated_at: data?.updated_at ?? new Date().toISOString(),
+    });
+    saveLocalSettings(next);
+    return value;
+  } catch {
+    const setting = getLocalSettings().find((item) => item.key === key);
+    return setting?.value ?? 0;
+  }
+}
+
+export async function updateCashierSetting(key: string, value: number) {
+  const now = new Date().toISOString();
+  const localSetting: CashierSettingRecord = {
+    id: `local-${key}`,
+    key,
+    value,
+    created_at: now,
+    updated_at: now,
+  };
+
+  const current = getLocalSettings().filter((item) => item.key !== key);
+  current.push(localSetting);
+  saveLocalSettings(current);
+
+  if (!supabase) return localSetting;
+
+  try {
+    const { data, error } = await supabase
+      .from("cashier_settings")
+      .upsert({ key, value, updated_at: now })
+      .select("*")
+      .single();
+
+    if (error) {
+      if (isRemotePersistenceError(error)) {
+        return localSetting;
+      }
+      throw error;
+    }
+
+    const saved = data as CashierSettingRecord;
+    const next = current.filter((item) => item.key !== key);
+    next.push(saved);
+    saveLocalSettings(next);
+    return saved;
+  } catch {
+    return localSetting;
+  }
+}
 
 export async function getProducts() {
   if (!supabase) return [];
