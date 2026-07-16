@@ -1,6 +1,8 @@
+import type { UserRole } from "../lib/roles";
+
 interface NavbarProps {
   sidebarWidth: number;
-  role: "manager" | "barmanager";
+  role: UserRole;
   onLogout: () => void;
   onOpenMenu?: () => void;
 }
@@ -59,7 +61,13 @@ export default function Navbar({
             className="text-xs"
             style={{ color: "var(--muted-foreground)" }}
           >
-            {role === "manager" ? "Store Manager" : "Bar Manager"}
+            {role === "manager"
+              ? "Store Manager"
+              : role === "super_admin"
+                ? "Super Admin"
+                : role === "admin"
+                  ? "Admin"
+                  : "Bar Manager"}
           </span>
         </div>
         <div
@@ -68,9 +76,23 @@ export default function Navbar({
             background: "linear-gradient(135deg, #c9a84c, #a07828)",
             color: "#0f1117",
           }}
-          title={role === "manager" ? "Store Manager" : "Bar Manager"}
+          title={
+            role === "manager"
+              ? "Store Manager"
+              : role === "super_admin"
+                ? "Super Admin"
+                : role === "admin"
+                  ? "Admin"
+                  : "Bar Manager"
+          }
         >
-          {role === "manager" ? "SM" : "BM"}
+          {role === "manager"
+            ? "SM"
+            : role === "super_admin"
+              ? "SA"
+              : role === "admin"
+                ? "AD"
+                : "BM"}
         </div>
         <button
           onClick={onLogout}

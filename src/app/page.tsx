@@ -3,6 +3,11 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../lib/supabase";
+import {
+  resolveEffectiveRole,
+  serializeRoleForProfile,
+  SUPER_ADMIN_EMAIL,
+} from "../lib/roles";
 
 export default function Home() {
   const router = useRouter();
@@ -12,7 +17,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState<"sign-in" | "sign-up">("sign-in");
 
-  const syncManagerProfile = async () => {
+  const syncProfileRole = async (userEmail?: string | null) => {
     if (!supabase) {
       return;
     }
@@ -26,6 +31,8 @@ export default function Home() {
       return;
     }
 
+    const roleValue = userEmail === SUPER_ADMIN_EMAIL ? "super_admin" : null;
+
     const { data: profile } = await supabase
       .from("profiles")
       .select("id, role")
@@ -33,10 +40,24 @@ export default function Home() {
       .maybeSingle();
 
     if (profile) {
-      await supabase
-        .from("profiles")
-        .update({ role: "manager" })
-        .eq("id", user.id);
+      const nextRole =
+        roleValue ?? resolveEffectiveRole(user.email, profile.role);
+      await supabase.from("profiles").upsert(
+        {
+          id: user.id,
+          email: user.email ?? userEmail ?? "",
+          role: nextRole,
+        },
+        { onConflict: "id" },
+      );
+    } else {
+      await supabase.from("profiles").insert({
+        id: user.id,
+        email: user.email ?? userEmail ?? "",
+        role: serializeRoleForProfile(
+          roleValue === "super_admin" ? "super_admin" : "manager",
+        ),
+      });
     }
   };
 
@@ -48,7 +69,7 @@ export default function Home() {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (session) {
-          void syncManagerProfile();
+          void syncProfileRole(session.user?.email);
           router.replace("/dashboard");
         }
       },
@@ -70,26 +91,19 @@ export default function Home() {
       }
 
       if (mode === "sign-up") {
-        const { error: signUpError } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: { role: "manager" },
-            emailRedirectTo: `${window.location.origin}/auth/callback`,
-          },
-        });
-        if (signUpError) throw signUpError;
-        await syncManagerProfile();
-        setError("Check your email for the confirmation link.");
-      } else {
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (signInError) throw signInError;
-        await syncManagerProfile();
-        router.replace("/dashboard");
+        setError(
+          "Sign-up is disabled for the public. Please sign in with your assigned account.",
+        );
+        return;
       }
+
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (signInError) throw signInError;
+      await syncProfileRole(email);
+      router.replace("/dashboard");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Authentication failed.");
     } finally {
@@ -171,31 +185,16 @@ export default function Home() {
 
           <div>
             <h2 className="text-2xl font-semibold text-[#f4efe7]">
-              {mode === "sign-in" ? "Welcome back" : "Create account"}
+              Welcome back
             </h2>
             <p className="mt-1 text-sm text-[#7a8090]">
-              {mode === "sign-in"
-                ? "Sign in to your account to continue"
-                : "Create a Supabase-backed account for the hotel system"}
+              Sign in to your assigned account to continue
             </p>
           </div>
 
-          <div className="flex rounded-xl border border-[#252b3b] bg-[#1e2435] p-1">
-            {(["sign-in", "sign-up"] as const).map((value) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => setMode(value)}
-                className="flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-all"
-                style={{
-                  backgroundColor:
-                    mode === value ? "rgba(201,168,76,0.15)" : "transparent",
-                  color: mode === value ? "#c9a84c" : "#7a8090",
-                }}
-              >
-                {value === "sign-in" ? "Sign In" : "Sign Up"}
-              </button>
-            ))}
+          <div className="rounded-xl border border-[#252b3b] bg-[#1e2435] p-4 text-sm text-[#8c94a8]">
+            Only invited staff members can sign in. The super admin creates new
+            accounts and sends the verification email.
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -241,13 +240,7 @@ export default function Home() {
                 color: "#0f1117",
               }}
             >
-              {loading
-                ? mode === "sign-in"
-                  ? "Signing in..."
-                  : "Creating account..."
-                : mode === "sign-in"
-                  ? "Sign In"
-                  : "Create Account"}
+              {loading ? "Signing in..." : "Sign In"}
             </button>
           </form>
 
@@ -257,8 +250,8 @@ export default function Home() {
             </p>
             <div className="space-y-1 text-xs text-[#e8e6e1]">
               <p>
-                Supabase auth is now enabled for this app. Use any email and
-                password to sign up or sign in.
+                Contact the super admin to create your account. After signup,
+                verify your email before the first sign in.
               </p>
             </div>
           </div>

@@ -1,9 +1,14 @@
 import { useState } from "react";
+import {
+  canAccessAdminPanel,
+  canAccessManagerFeatures,
+  type UserRole,
+} from "../lib/roles";
 
 interface SidebarProps {
   currentPage: string;
   onNavigate: (page: string) => void;
-  role: "manager" | "barmanager";
+  role: UserRole;
   collapsed: boolean;
   onToggle: () => void;
   mobileOpen?: boolean;
@@ -14,7 +19,7 @@ type NavItem = {
   id: string;
   label: string;
   icon: string;
-  managerOnly?: boolean;
+  roleAccess?: UserRole[];
 };
 
 type NavGroup = {
@@ -31,12 +36,27 @@ const navGroups: NavGroup[] = [
     icon: "▣",
     items: [
       { id: "dashboard", label: "Dashboard", icon: "⊞" },
-      { id: "items", label: "Item Management", icon: "◈", managerOnly: true },
-      { id: "store", label: "Store Management", icon: "▣", managerOnly: true },
+      {
+        id: "items",
+        label: "Item Management",
+        icon: "◈",
+        roleAccess: ["super_admin", "admin", "manager"],
+      },
+      {
+        id: "store",
+        label: "Store Management",
+        icon: "▣",
+        roleAccess: ["super_admin", "admin", "manager"],
+      },
       { id: "give-to-bar", label: "Give to Bar", icon: "↗" },
       { id: "history", label: "Distribution History", icon: "≡" },
       { id: "inventory", label: "Inventory", icon: "◉" },
-      { id: "reports", label: "Reports", icon: "▦", managerOnly: true },
+      {
+        id: "reports",
+        label: "Reports",
+        icon: "▦",
+        roleAccess: ["super_admin", "admin", "manager"],
+      },
     ],
   },
   {
@@ -64,9 +84,13 @@ export default function Sidebar({
 
   const filteredGroups = navGroups.map((group) => ({
     ...group,
-    items: group.items.filter(
-      (item) => !item.managerOnly || role === "manager",
-    ),
+    items: group.items.filter((item) => {
+      if (!item.roleAccess) {
+        return true;
+      }
+
+      return item.roleAccess.includes(role);
+    }),
   }));
 
   const toggleGroup = (groupKey: string) => {
@@ -237,6 +261,18 @@ export default function Sidebar({
               })}
             </ul>
           </nav>
+
+          {canAccessAdminPanel(role) ? (
+            <div className="px-3 pb-2">
+              <button
+                type="button"
+                onClick={() => onNavigate("admin-panel")}
+                className="w-full rounded-xl border border-[#c9a84c]/30 bg-[#c9a84c]/10 px-3 py-2.5 text-left text-sm font-medium text-[#f3e1a9]"
+              >
+                {collapsed ? "⚙" : "Admin Panel"}
+              </button>
+            </div>
+          ) : null}
 
           {/* Collapse toggle */}
           <div

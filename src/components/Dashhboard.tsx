@@ -11,11 +11,13 @@ import {
 } from "recharts";
 import type { Item, Transaction } from "../lib/mockData";
 
+import type { UserRole } from "../lib/roles";
+
 interface DashboardProps {
   items: Item[];
   transactions: Transaction[];
   onNavigate: (page: string) => void;
-  role: "manager" | "barmanager";
+  role: UserRole;
 }
 
 const weeklyData = [

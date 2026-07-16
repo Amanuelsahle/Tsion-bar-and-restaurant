@@ -28,7 +28,14 @@ import {
   type StockMovementRecord,
 } from "../../lib/supabase-data";
 import { supabase } from "../../lib/supabase";
+import AdminPanel from "../../components/AdminPanel";
 import type { Item, StockHistory, Transaction } from "../../lib/mockData";
+import {
+  canAccessAdminPanel,
+  canAccessManagerFeatures,
+  resolveEffectiveRole,
+  type UserRole,
+} from "../../lib/roles";
 
 type PageId =
   | "dashboard"
@@ -41,12 +48,12 @@ type PageId =
   | "cashier"
   | "cashier-bonos"
   | "cashier-checkout"
-  | "cashier-reports";
-type Role = "manager" | "barmanager";
+  | "cashier-reports"
+  | "admin-panel";
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [role] = useState<Role>("manager");
+  const [role, setRole] = useState<UserRole>("manager");
   const [currentPage, setCurrentPage] = useState<PageId>("dashboard");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -56,6 +63,35 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const loadProfile = async () => {
+      if (!supabase) {
+        setLoading(false);
+        return;
+      }
+
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        router.replace("/");
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      const nextRole = resolveEffectiveRole(
+        user.email,
+        profile?.role ?? user.user_metadata?.role,
+      );
+      setRole(nextRole);
+    };
+
     const loadData = async () => {
       try {
         const [products, stockMoves, dists] = await Promise.all([
@@ -111,11 +147,27 @@ export default function DashboardPage() {
       }
     };
 
+    void loadProfile();
     void loadData();
-  }, []);
+  }, [router]);
 
   const handleNavigate = (page: string) => {
-    setCurrentPage(page as PageId);
+    const nextPage = page as PageId;
+
+    if (nextPage === "admin-panel" && !canAccessAdminPanel(role)) {
+      return;
+    }
+
+    if (
+      (nextPage === "items" ||
+        nextPage === "store" ||
+        nextPage === "reports") &&
+      !canAccessManagerFeatures(role)
+    ) {
+      return;
+    }
+
+    setCurrentPage(nextPage);
     setMobileMenuOpen(false);
   };
 
@@ -320,6 +372,10 @@ export default function DashboardPage() {
         return <CashierCheckout />;
       case "cashier-reports":
         return <CashierReports />;
+      case "admin-panel":
+        return (
+          <AdminPanel role={role} onClose={() => setCurrentPage("dashboard")} />
+        );
       case "cashier":
         return <BonoManagement />;
       default:
