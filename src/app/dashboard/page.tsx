@@ -12,6 +12,8 @@ import GiveToBar from "../../components/GiveToBar";
 import DistributionHistory from "../../components/DistributionHistory";
 import Reports from "../../components/Reports";
 import BonoManagement from "../../components/BonoManagement";
+import CashierCheckout from "../../components/CashierCheckout";
+import CashierReports from "../../components/CashierReports";
 import {
   createDistribution,
   createProduct,
@@ -36,7 +38,10 @@ type PageId =
   | "history"
   | "inventory"
   | "reports"
-  | "cashier";
+  | "cashier"
+  | "cashier-bonos"
+  | "cashier-checkout"
+  | "cashier-reports";
 type Role = "manager" | "barmanager";
 
 export default function DashboardPage() {
@@ -307,6 +312,12 @@ export default function DashboardPage() {
         return <Inventory items={items} />;
       case "reports":
         return <Reports items={items} transactions={transactions} />;
+      case "cashier-bonos":
+        return <BonoManagement />;
+      case "cashier-checkout":
+        return <CashierCheckout />;
+      case "cashier-reports":
+        return <CashierReports />;
       case "cashier":
         return <BonoManagement />;
       default:

@@ -41,7 +41,11 @@ const navGroups: NavGroup[] = [
     key: "cashier",
     label: "Cashier",
     icon: "◌",
-    items: [{ id: "cashier", label: "Cashier Balance", icon: "◌" }],
+    items: [
+      { id: "cashier-bonos", label: "Bono Management", icon: "◈" },
+      { id: "cashier-checkout", label: "Cashier Checkout", icon: "◌" },
+      { id: "cashier-reports", label: "Cashier Reports", icon: "▦" },
+    ],
   },
 ];
 

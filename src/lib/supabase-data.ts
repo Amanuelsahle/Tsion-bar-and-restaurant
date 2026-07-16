@@ -18,8 +18,32 @@ export type CashierSettingRecord = {
   updated_at: string;
 };
 
+export type CashierReportRecord = {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  cashier_name: string;
+  initial_money: number;
+  net_bono_value: number;
+  final_balance: number;
+  special_payouts: number;
+  today_money: number;
+  balance_check: number;
+  items: Array<{
+    id: string;
+    name: string;
+    quantity: number;
+    price: number;
+    additional: number;
+    remaining: number;
+    effective_quantity: number;
+    total_amount: number;
+  }>;
+};
+
 const BONO_STORAGE_KEY = "tsion-cashier-bonos";
 const CASHIER_SETTING_STORAGE_KEY = "tsion-cashier-settings";
+const CASHIER_REPORTS_STORAGE_KEY = "tsion-cashier-reports";
 
 function getLocalBonos(): BonoRecord[] {
   if (typeof window === "undefined") return [];
@@ -61,6 +85,29 @@ function saveLocalSettings(settings: CashierSettingRecord[]) {
   window.localStorage.setItem(
     CASHIER_SETTING_STORAGE_KEY,
     JSON.stringify(settings),
+  );
+}
+
+function getLocalReports(): CashierReportRecord[] {
+  if (typeof window === "undefined") return [];
+
+  try {
+    const stored = window.localStorage.getItem(CASHIER_REPORTS_STORAGE_KEY);
+    if (!stored) return [];
+
+    const parsed = JSON.parse(stored);
+    return Array.isArray(parsed) ? (parsed as CashierReportRecord[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveLocalReports(reports: CashierReportRecord[]) {
+  if (typeof window === "undefined") return;
+
+  window.localStorage.setItem(
+    CASHIER_REPORTS_STORAGE_KEY,
+    JSON.stringify(reports),
   );
 }
 
@@ -349,6 +396,77 @@ export async function updateCashierSetting(key: string, value: number) {
     return saved;
   } catch {
     return localSetting;
+  }
+}
+
+export async function getCashierReports() {
+  if (!supabase) return getLocalReports();
+
+  try {
+    const { data, error } = await supabase
+      .from("cashier_reports")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      if (isRemotePersistenceError(error)) {
+        return getLocalReports();
+      }
+      throw error;
+    }
+
+    const reports = (data ?? []) as CashierReportRecord[];
+    saveLocalReports(reports);
+    return reports;
+  } catch {
+    return getLocalReports();
+  }
+}
+
+export async function createCashierReport(
+  report: Omit<CashierReportRecord, "id" | "created_at" | "updated_at">,
+) {
+  const now = new Date().toISOString();
+  const localReport: CashierReportRecord = {
+    id: `local-${Date.now()}`,
+    created_at: now,
+    updated_at: now,
+    ...report,
+  };
+
+  if (!supabase) {
+    const next = [localReport, ...getLocalReports()];
+    saveLocalReports(next);
+    return localReport;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("cashier_reports")
+      .insert(report)
+      .select("*")
+      .single();
+
+    if (error) {
+      if (isRemotePersistenceError(error)) {
+        const next = [localReport, ...getLocalReports()];
+        saveLocalReports(next);
+        return localReport;
+      }
+      throw error;
+    }
+
+    const saved = data as CashierReportRecord;
+    const next = [
+      saved,
+      ...getLocalReports().filter((item) => item.id !== saved.id),
+    ];
+    saveLocalReports(next);
+    return saved;
+  } catch {
+    const next = [localReport, ...getLocalReports()];
+    saveLocalReports(next);
+    return localReport;
   }
 }
 

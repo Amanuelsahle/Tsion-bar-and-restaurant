@@ -124,6 +124,7 @@ export default function BonoManagement() {
         setBonos((prev) => [created, ...prev]);
       }
 
+      setShowForm(false);
       resetForm();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to save bono.");
