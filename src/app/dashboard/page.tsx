@@ -34,7 +34,8 @@ type PageId =
   | "give-to-bar"
   | "history"
   | "inventory"
-  | "reports";
+  | "reports"
+  | "cashier";
 type Role = "manager" | "barmanager";
 
 export default function DashboardPage() {
@@ -305,6 +306,30 @@ export default function DashboardPage() {
         return <Inventory items={items} />;
       case "reports":
         return <Reports items={items} transactions={transactions} />;
+      case "cashier":
+        return (
+          <div
+            className="rounded-3xl border p-8"
+            style={{
+              borderColor: "var(--border)",
+              backgroundColor: "var(--card)",
+            }}
+          >
+            <h2
+              className="text-2xl font-bold font-display"
+              style={{ color: "var(--foreground)" }}
+            >
+              Cashier Balance Management
+            </h2>
+            <p
+              className="mt-3 text-sm"
+              style={{ color: "var(--muted-foreground)" }}
+            >
+              This section will be used for night cash balance tracking and
+              cashier-related operations.
+            </p>
+          </div>
+        );
       default:
         return (
           <Dashboard

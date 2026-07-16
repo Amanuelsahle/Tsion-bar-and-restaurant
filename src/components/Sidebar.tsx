@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 interface SidebarProps {
   currentPage: string;
   onNavigate: (page: string) => void;
@@ -6,14 +8,41 @@ interface SidebarProps {
   onToggle: () => void;
 }
 
-const navItems = [
-  { id: "dashboard", label: "Dashboard", icon: "⊞" },
-  { id: "items", label: "Item Management", icon: "◈", managerOnly: true },
-  { id: "store", label: "Store Management", icon: "▣", managerOnly: true },
-  { id: "give-to-bar", label: "Give to Bar", icon: "↗" },
-  { id: "history", label: "Distribution History", icon: "≡" },
-  { id: "inventory", label: "Inventory", icon: "◉" },
-  { id: "reports", label: "Reports", icon: "▦", managerOnly: true },
+type NavItem = {
+  id: string;
+  label: string;
+  icon: string;
+  managerOnly?: boolean;
+};
+
+type NavGroup = {
+  key: string;
+  label: string;
+  icon: string;
+  items: NavItem[];
+};
+
+const navGroups: NavGroup[] = [
+  {
+    key: "store-bar",
+    label: "Store & Bar",
+    icon: "▣",
+    items: [
+      { id: "dashboard", label: "Dashboard", icon: "⊞" },
+      { id: "items", label: "Item Management", icon: "◈", managerOnly: true },
+      { id: "store", label: "Store Management", icon: "▣", managerOnly: true },
+      { id: "give-to-bar", label: "Give to Bar", icon: "↗" },
+      { id: "history", label: "Distribution History", icon: "≡" },
+      { id: "inventory", label: "Inventory", icon: "◉" },
+      { id: "reports", label: "Reports", icon: "▦", managerOnly: true },
+    ],
+  },
+  {
+    key: "cashier",
+    label: "Cashier",
+    icon: "◌",
+    items: [{ id: "cashier", label: "Cashier Balance", icon: "◌" }],
+  },
 ];
 
 export default function Sidebar({
@@ -23,9 +52,18 @@ export default function Sidebar({
   collapsed,
   onToggle,
 }: SidebarProps) {
-  const filtered = navItems.filter(
-    (item) => !item.managerOnly || role === "manager",
-  );
+  const [expandedGroup, setExpandedGroup] = useState("store-bar");
+
+  const filteredGroups = navGroups.map((group) => ({
+    ...group,
+    items: group.items.filter(
+      (item) => !item.managerOnly || role === "manager",
+    ),
+  }));
+
+  const toggleGroup = (groupKey: string) => {
+    setExpandedGroup((prev) => (prev === groupKey ? "" : groupKey));
+  };
 
   return (
     <aside
@@ -48,7 +86,7 @@ export default function Sidebar({
           style={{ borderColor: "var(--border)" }}
         >
           <div
-            className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold"
+            className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold"
             style={{
               background: "linear-gradient(135deg, #c9a84c, #a07828)",
               color: "#0f1117",
@@ -76,28 +114,39 @@ export default function Sidebar({
 
         {/* Nav */}
         <nav className="flex-1 py-4 overflow-y-auto scrollbar-hide">
-          <ul className="space-y-0.5 px-2">
-            {filtered.map((item) => {
-              const active = currentPage === item.id;
+          <ul className="space-y-1.5 px-2">
+            {filteredGroups.map((group) => {
+              const activeGroup = group.items.some(
+                (item) => currentPage === item.id,
+              );
+              const isExpanded = expandedGroup === group.key;
+              const hasChildren = group.items.length > 1;
+
               return (
-                <li key={item.id}>
+                <li key={group.key}>
                   <button
-                    onClick={() => onNavigate(item.id)}
-                    title={collapsed ? item.label : undefined}
+                    onClick={() => {
+                      if (hasChildren) {
+                        toggleGroup(group.key);
+                      } else if (group.items[0]) {
+                        onNavigate(group.items[0].id);
+                      }
+                    }}
+                    title={collapsed ? group.label : undefined}
                     className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 text-left"
                     style={{
-                      backgroundColor: active
+                      backgroundColor: activeGroup
                         ? "rgba(201,168,76,0.15)"
                         : "transparent",
-                      color: active
+                      color: activeGroup
                         ? "var(--primary)"
                         : "var(--muted-foreground)",
-                      borderLeft: active
+                      borderLeft: activeGroup
                         ? "2px solid var(--primary)"
                         : "2px solid transparent",
                     }}
                     onMouseEnter={(e) => {
-                      if (!active) {
+                      if (!activeGroup) {
                         (
                           e.currentTarget as HTMLButtonElement
                         ).style.backgroundColor = "rgba(255,255,255,0.04)";
@@ -106,7 +155,7 @@ export default function Sidebar({
                       }
                     }}
                     onMouseLeave={(e) => {
-                      if (!active) {
+                      if (!activeGroup) {
                         (
                           e.currentTarget as HTMLButtonElement
                         ).style.backgroundColor = "transparent";
@@ -115,11 +164,47 @@ export default function Sidebar({
                       }
                     }}
                   >
-                    <span className="text-base flex-shrink-0">{item.icon}</span>
+                    <span className="text-base shrink-0">{group.icon}</span>
                     {!collapsed && (
-                      <span className="truncate">{item.label}</span>
+                      <>
+                        <span className="truncate">{group.label}</span>
+                        {hasChildren && (
+                          <span className="ml-auto text-[10px]">
+                            {isExpanded ? "▾" : "▸"}
+                          </span>
+                        )}
+                      </>
                     )}
                   </button>
+
+                  {!collapsed && isExpanded && hasChildren && (
+                    <ul className="mt-1 ml-4 space-y-1">
+                      {group.items.map((item) => {
+                        const active = currentPage === item.id;
+                        return (
+                          <li key={item.id}>
+                            <button
+                              onClick={() => onNavigate(item.id)}
+                              className="w-full flex items-center gap-2 px-2.5 py-2 rounded-md text-sm transition-all duration-150 text-left"
+                              style={{
+                                backgroundColor: active
+                                  ? "rgba(201,168,76,0.12)"
+                                  : "transparent",
+                                color: active
+                                  ? "var(--primary)"
+                                  : "var(--muted-foreground)",
+                              }}
+                            >
+                              <span className="text-sm shrink-0">
+                                {item.icon}
+                              </span>
+                              <span className="truncate">{item.label}</span>
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
                 </li>
               );
             })}
