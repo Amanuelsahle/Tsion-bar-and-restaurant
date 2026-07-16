@@ -16,6 +16,11 @@ export default function DistributionHistory({
   const [filterBarMan, setFilterBarMan] = useState("");
   const [filterDate, setFilterDate] = useState("");
   const [detail, setDetail] = useState<Transaction | null>(null);
+  const [showRangeCalculator, setShowRangeCalculator] = useState(false);
+  const [rangeStart, setRangeStart] = useState("");
+  const [rangeEnd, setRangeEnd] = useState("");
+  const [rangeTotal, setRangeTotal] = useState<number | null>(null);
+  const [rangeError, setRangeError] = useState("");
 
   const filtered = transactions
     .filter((t) => {
@@ -32,6 +37,33 @@ export default function DistributionHistory({
       const bTime = new Date(b.date).getTime();
       return bTime - aTime;
     });
+
+  const calculateRangeTotal = () => {
+    if (!rangeStart || !rangeEnd) {
+      setRangeError("Please select both dates.");
+      setRangeTotal(null);
+      return;
+    }
+
+    const startTime = new Date(`${rangeStart}T00:00:00`).getTime();
+    const endTime = new Date(`${rangeEnd}T00:00:00`).getTime();
+
+    if (startTime > endTime) {
+      setRangeError("Start date cannot be after end date.");
+      setRangeTotal(null);
+      return;
+    }
+
+    const matchedTransactions = transactions.filter((txn) => {
+      const txnTime = new Date(`${txn.date}T00:00:00`).getTime();
+      return txnTime >= startTime && txnTime <= endTime;
+    });
+
+    setRangeTotal(
+      matchedTransactions.reduce((sum, txn) => sum + txn.grandTotal, 0),
+    );
+    setRangeError("");
+  };
 
   if (detail) {
     const handlePrintReceipt = () => {
@@ -359,7 +391,139 @@ export default function DistributionHistory({
             Clear
           </button>
         )}
+        <button
+          onClick={() => {
+            setShowRangeCalculator((prev) => {
+              const next = !prev;
+              if (!next) {
+                setRangeStart("");
+                setRangeEnd("");
+                setRangeTotal(null);
+                setRangeError("");
+              }
+              return next;
+            });
+          }}
+          className="px-4 py-2.5 rounded-xl text-sm font-medium"
+          style={{
+            background: "linear-gradient(135deg, #c9a84c, #a07828)",
+            color: "#0f1117",
+          }}
+        >
+          {showRangeCalculator ? "Hide Range Total" : "Calculate Range Total"}
+        </button>
       </div>
+
+      {showRangeCalculator && (
+        <div
+          className="rounded-2xl p-4 space-y-3"
+          style={{
+            backgroundColor: "var(--card)",
+            border: "1px solid var(--border)",
+          }}
+        >
+          <div className="flex flex-wrap gap-3 items-end justify-between">
+            <div className="flex flex-wrap gap-3 items-end">
+              <div className="flex flex-col gap-1">
+                <label
+                  className="text-xs"
+                  style={{ color: "var(--muted-foreground)" }}
+                >
+                  From
+                </label>
+                <input
+                  type="date"
+                  value={rangeStart}
+                  onChange={(e) => setRangeStart(e.target.value)}
+                  className="px-4 py-2.5 rounded-xl text-sm outline-none"
+                  style={{
+                    backgroundColor: "var(--secondary)",
+                    border: "1px solid var(--border)",
+                    color: "var(--foreground)",
+                    colorScheme: "dark",
+                  }}
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label
+                  className="text-xs"
+                  style={{ color: "var(--muted-foreground)" }}
+                >
+                  To
+                </label>
+                <input
+                  type="date"
+                  value={rangeEnd}
+                  onChange={(e) => setRangeEnd(e.target.value)}
+                  className="px-4 py-2.5 rounded-xl text-sm outline-none"
+                  style={{
+                    backgroundColor: "var(--secondary)",
+                    border: "1px solid var(--border)",
+                    color: "var(--foreground)",
+                    colorScheme: "dark",
+                  }}
+                />
+              </div>
+              <button
+                onClick={calculateRangeTotal}
+                className="px-4 py-2.5 rounded-xl text-sm font-medium"
+                style={{
+                  backgroundColor: "var(--secondary)",
+                  color: "var(--foreground)",
+                  border: "1px solid var(--border)",
+                }}
+              >
+                Calculate
+              </button>
+            </div>
+            <button
+              onClick={() => {
+                setShowRangeCalculator(false);
+                setRangeStart("");
+                setRangeEnd("");
+                setRangeTotal(null);
+                setRangeError("");
+              }}
+              className="text-lg leading-none px-2 py-1 rounded-lg"
+              style={{
+                backgroundColor: "rgba(239,68,68,0.08)",
+                color: "#f87171",
+                border: "1px solid rgba(239,68,68,0.2)",
+              }}
+              aria-label="Cancel calculator"
+            >
+              ×
+            </button>
+          </div>
+          {rangeError ? (
+            <p className="text-sm" style={{ color: "#f87171" }}>
+              {rangeError}
+            </p>
+          ) : null}
+          {rangeTotal !== null && !rangeError ? (
+            <div
+              className="rounded-xl p-3"
+              style={{
+                backgroundColor: "rgba(201,168,76,0.08)",
+                border: "1px solid rgba(201,168,76,0.2)",
+              }}
+            >
+              <p
+                className="text-xs uppercase tracking-wider"
+                style={{ color: "var(--muted-foreground)" }}
+              >
+                Range total ({rangeStart} to {rangeEnd}, inclusive)
+              </p>
+              <p
+                className="text-xl font-bold font-display"
+                style={{ color: "var(--primary)" }}
+              >
+                {rangeTotal.toLocaleString()} Birr
+              </p>
+            </div>
+          ) : null}
+        </div>
+      )}
 
       <div
         className="rounded-2xl overflow-hidden"
