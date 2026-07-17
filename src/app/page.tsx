@@ -46,7 +46,7 @@ export default function Home() {
         {
           id: user.id,
           email: user.email ?? userEmail ?? "",
-          role: nextRole,
+          role: serializeRoleForProfile(nextRole),
         },
         { onConflict: "id" },
       );

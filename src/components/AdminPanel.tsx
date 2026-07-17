@@ -41,6 +41,9 @@ export default function AdminPanel({ role, onClose }: AdminPanelProps) {
   const [error, setError] = useState<string | null>(null);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [users, setUsers] = useState<ListedUser[]>([]);
+  const [editingUserId, setEditingUserId] = useState<string | null>(null);
+  const [editingRole, setEditingRole] = useState<UserRole>("manager");
+  const [updatingUserId, setUpdatingUserId] = useState<string | null>(null);
 
   useEffect(() => {
     setIsSuperAdmin(canManageUsers(role));
@@ -57,11 +60,10 @@ export default function AdminPanel({ role, onClose }: AdminPanelProps) {
         const { data, error } = await supabase
           .from("profiles")
           .select("id, email, role")
-          .order("updated_at", { ascending: false })
-          .limit(20);
+          .order("updated_at", { ascending: false });
 
         if (error) {
-          return;
+          throw error;
         }
 
         const nextUsers = (data ?? [])
@@ -75,6 +77,11 @@ export default function AdminPanel({ role, onClose }: AdminPanelProps) {
           }));
 
         setUsers(nextUsers);
+        setError(null);
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error ? err.message : "Unable to load staff accounts.";
+        setError(message);
       } finally {
         setUsersLoading(false);
       }
@@ -161,6 +168,73 @@ export default function AdminPanel({ role, onClose }: AdminPanelProps) {
       setError(message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleStartEdit = (user: ListedUser) => {
+    setEditingUserId(user.id);
+    setEditingRole(user.role);
+    setMessage(null);
+    setError(null);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingUserId(null);
+    setEditingRole("manager");
+  };
+
+  const handleRoleUpdate = async (user: ListedUser) => {
+    if (!supabase) {
+      setError("Supabase is not configured.");
+      return;
+    }
+
+    if (!isSuperAdmin) {
+      setError("Only a super admin can edit roles.");
+      return;
+    }
+
+    setUpdatingUserId(user.id);
+    setMessage(null);
+    setError(null);
+
+    try {
+      const { data: currentUserData } = await supabase.auth.getUser();
+
+      await supabase.from("profiles").upsert(
+        {
+          id: user.id,
+          email: user.email,
+          role: serializeRoleForProfile(editingRole),
+        },
+        { onConflict: "id" },
+      );
+
+      if (currentUserData.user?.id === user.id) {
+        const { error: metadataError } = await supabase.auth.updateUser({
+          data: { role: editingRole },
+        });
+
+        if (metadataError) {
+          throw metadataError;
+        }
+      }
+
+      setUsers((prev) =>
+        prev.map((item) =>
+          item.id === user.id ? { ...item, role: editingRole } : item,
+        ),
+      );
+      setMessage(
+        `${user.email} now has the ${getRoleLabel(editingRole)} role.`,
+      );
+      setEditingUserId(null);
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Unable to update role.";
+      setError(message);
+    } finally {
+      setUpdatingUserId(null);
     }
   };
 
@@ -269,22 +343,71 @@ export default function AdminPanel({ role, onClose }: AdminPanelProps) {
 
         {users.length > 0 ? (
           <div className="space-y-2">
-            {users.map((user) => (
-              <div
-                key={user.id}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[#2b3246] bg-[#121723] px-3 py-2"
-              >
-                <div>
-                  <p className="text-sm text-[#f5efe7]">{user.email}</p>
-                  <p className="text-xs text-[#8c94a8]">
-                    {getRoleLabel(user.role)}
-                  </p>
+            {users.map((user) => {
+              const isEditing = editingUserId === user.id;
+
+              return (
+                <div
+                  key={user.id}
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[#2b3246] bg-[#121723] px-3 py-2"
+                >
+                  <div>
+                    <p className="text-sm text-[#f5efe7]">{user.email}</p>
+                    <p className="text-xs text-[#8c94a8]">
+                      {getRoleLabel(user.role)}
+                    </p>
+                  </div>
+
+                  {isEditing ? (
+                    <div className="flex flex-wrap items-center gap-2">
+                      <select
+                        value={editingRole}
+                        onChange={(event) =>
+                          setEditingRole(event.target.value as UserRole)
+                        }
+                        className="rounded-lg border border-[#2b3246] bg-[#0f1420] px-3 py-2 text-sm text-[#f5efe7]"
+                      >
+                        {roleOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() => void handleRoleUpdate(user)}
+                        disabled={updatingUserId === user.id}
+                        className="rounded-lg bg-[#c9a84c] px-3 py-2 text-sm font-semibold text-[#0f1117] disabled:opacity-70"
+                      >
+                        {updatingUserId === user.id ? "Saving..." : "Save"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleCancelEdit}
+                        className="rounded-lg border border-[#2b3246] px-3 py-2 text-sm text-[#cfd4df]"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <span className="rounded-full border border-[#2b3246] px-2.5 py-1 text-[11px] uppercase tracking-[0.2em] text-[#c9a84c]">
+                        {user.role}
+                      </span>
+                      {isSuperAdmin ? (
+                        <button
+                          type="button"
+                          onClick={() => handleStartEdit(user)}
+                          className="rounded-lg border border-[#2b3246] px-3 py-2 text-sm text-[#cfd4df]"
+                        >
+                          Edit role
+                        </button>
+                      ) : null}
+                    </div>
+                  )}
                 </div>
-                <span className="rounded-full border border-[#2b3246] px-2.5 py-1 text-[11px] uppercase tracking-[0.2em] text-[#c9a84c]">
-                  {user.role}
-                </span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <p className="text-sm text-[#8c94a8]">

@@ -34,6 +34,7 @@ import {
   canAccessAdminPanel,
   canAccessManagerFeatures,
   resolveEffectiveRole,
+  serializeRoleForProfile,
   type UserRole,
 } from "../../lib/roles";
 
@@ -89,6 +90,18 @@ export default function DashboardPage() {
         user.email,
         profile?.role ?? user.user_metadata?.role,
       );
+
+      if (supabase) {
+        await supabase.from("profiles").upsert(
+          {
+            id: user.id,
+            email: user.email ?? "",
+            role: serializeRoleForProfile(nextRole),
+          },
+          { onConflict: "id" },
+        );
+      }
+
       setRole(nextRole);
     };
 

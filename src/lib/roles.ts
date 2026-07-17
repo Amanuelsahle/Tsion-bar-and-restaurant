@@ -36,10 +36,8 @@ export function resolveEffectiveRole(
   return normalizeRole(profileRole);
 }
 
-export function serializeRoleForProfile(
-  role: UserRole,
-): "manager" | "bar_manager" {
-  return role === "barmanager" ? "bar_manager" : "manager";
+export function serializeRoleForProfile(role: UserRole): string {
+  return role === "barmanager" ? "bar_manager" : role;
 }
 
 export function canAccessManagerFeatures(role: UserRole) {

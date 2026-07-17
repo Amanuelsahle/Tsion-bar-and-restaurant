@@ -1,6 +1,6 @@
 create extension if not exists "pgcrypto";
 
-create type public.user_role as enum ('manager', 'bar_manager');
+create type public.user_role as enum ('manager', 'bar_manager', 'admin', 'super_admin');
 
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
@@ -116,10 +116,32 @@ alter table public.cashier_settings enable row level security;
 alter table public.cashier_reports enable row level security;
 
 create policy "Users can view own profile" on public.profiles
-for select using (auth.uid() = id);
+for select using (
+  auth.uid() = id
+  or exists (
+    select 1 from public.profiles as viewer_profile
+    where viewer_profile.id = auth.uid()
+      and viewer_profile.role in ('admin', 'super_admin')
+  )
+);
 
 create policy "Users can update own profile" on public.profiles
-for update using (auth.uid() = id);
+for update using (
+  auth.uid() = id
+  or exists (
+    select 1 from public.profiles as updater_profile
+    where updater_profile.id = auth.uid()
+      and updater_profile.role = 'super_admin'
+  )
+)
+with check (
+  auth.uid() = id
+  or exists (
+    select 1 from public.profiles as updater_profile
+    where updater_profile.id = auth.uid()
+      and updater_profile.role = 'super_admin'
+  )
+);
 
 create policy "Authenticated users can manage products" on public.products
 for all using (auth.role() = 'authenticated')
