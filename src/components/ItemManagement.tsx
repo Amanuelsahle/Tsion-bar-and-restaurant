@@ -105,26 +105,28 @@ export default function ItemManagement({
       </div>
 
       {/* Category filter */}
-      <div className="flex gap-2">
-        {(["All", ...CATEGORIES] as const).map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setFilter(cat as any)}
-            className="px-4 py-2 rounded-xl text-xs font-medium transition-all"
-            style={{
-              backgroundColor:
-                filter === cat ? "rgba(201,168,76,0.15)" : "var(--secondary)",
-              color:
-                filter === cat ? "var(--primary)" : "var(--muted-foreground)",
-              border:
-                filter === cat
-                  ? "1px solid rgba(201,168,76,0.3)"
-                  : "1px solid var(--border)",
-            }}
-          >
-            {cat}
-          </button>
-        ))}
+      <div className="overflow-x-auto pb-1 no-scrollbar">
+        <div className="flex w-max min-w-full gap-2">
+          {(["All", ...CATEGORIES] as const).map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setFilter(cat as any)}
+              className="shrink-0 whitespace-nowrap rounded-xl px-4 py-2 text-xs font-medium transition-all"
+              style={{
+                backgroundColor:
+                  filter === cat ? "rgba(201,168,76,0.15)" : "var(--secondary)",
+                color:
+                  filter === cat ? "var(--primary)" : "var(--muted-foreground)",
+                border:
+                  filter === cat
+                    ? "1px solid rgba(201,168,76,0.3)"
+                    : "1px solid var(--border)",
+              }}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Table */}

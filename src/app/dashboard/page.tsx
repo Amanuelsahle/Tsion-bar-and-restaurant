@@ -405,7 +405,7 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0f1117] text-[#e8e6e1]">
+      <div className="min-h-dvh flex items-center justify-center bg-[#0f1117] text-[#e8e6e1]">
         <div className="text-center">
           <div className="mx-auto mb-3 h-10 w-10 animate-spin rounded-full border-2 border-[#c9a84c] border-t-transparent" />
           <p className="text-sm text-[#7a8090]">Loading your dashboard…</p>
@@ -415,7 +415,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0f1117] text-[#e8e6e1]">
+    <div className="min-h-dvh bg-[#0f1117] text-[#e8e6e1]">
       <div className="lg:hidden">
         <Sidebar
           currentPage={currentPage}
@@ -439,7 +439,7 @@ export default function DashboardPage() {
       </div>
 
       <div
-        className="min-h-screen transition-all duration-300"
+        className="min-h-dvh transition-all duration-300"
         style={{
           paddingLeft:
             typeof window !== "undefined" && window.innerWidth >= 1024
@@ -462,7 +462,7 @@ export default function DashboardPage() {
           onOpenMenu={() => setMobileMenuOpen(true)}
         />
 
-        <main className="px-3 py-4 pt-28 sm:px-4 sm:pt-32 lg:px-6 lg:py-6 lg:pt-28">
+        <main className="px-3 py-4 pt-28 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:px-4 sm:pt-32 lg:px-6 lg:py-6 lg:pt-28">
           {renderPage()}
         </main>
       </div>

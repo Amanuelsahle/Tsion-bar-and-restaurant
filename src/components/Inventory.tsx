@@ -20,6 +20,13 @@ export default function Inventory({ items }: InventoryProps) {
   const filtered = items
     .filter((i) => filter === "All" || i.category === filter)
     .filter((i) => !showLowOnly || i.currentBoxes < i.minThreshold);
+  const sortedItems = [...filtered].sort((a, b) => {
+    const aLow = a.currentBoxes < a.minThreshold;
+    const bLow = b.currentBoxes < b.minThreshold;
+
+    if (aLow === bLow) return 0;
+    return aLow ? 1 : -1;
+  });
   const showBottleMetrics = filter === "Liqueurs";
 
   const totalBoxes = items.reduce((s, i) => s + i.currentBoxes, 0);
@@ -111,28 +118,41 @@ export default function Inventory({ items }: InventoryProps) {
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
-        <div className="flex gap-2">
-          {(
-            ["All", "Beer", "Soft Drink", "Water", "Wine", "Liqueurs"] as const
-          ).map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setFilter(cat as any)}
-              className="px-4 py-2 rounded-xl text-xs font-medium transition-all"
-              style={{
-                backgroundColor:
-                  filter === cat ? "rgba(201,168,76,0.15)" : "var(--secondary)",
-                color:
-                  filter === cat ? "var(--primary)" : "var(--muted-foreground)",
-                border:
-                  filter === cat
-                    ? "1px solid rgba(201,168,76,0.3)"
-                    : "1px solid var(--border)",
-              }}
-            >
-              {cat}
-            </button>
-          ))}
+        <div className="overflow-x-auto pb-1 no-scrollbar">
+          <div className="flex w-max min-w-full gap-2">
+            {(
+              [
+                "All",
+                "Beer",
+                "Soft Drink",
+                "Water",
+                "Wine",
+                "Liqueurs",
+              ] as const
+            ).map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setFilter(cat as any)}
+                className="shrink-0 whitespace-nowrap rounded-xl px-4 py-2 text-xs font-medium transition-all"
+                style={{
+                  backgroundColor:
+                    filter === cat
+                      ? "rgba(201,168,76,0.15)"
+                      : "var(--secondary)",
+                  color:
+                    filter === cat
+                      ? "var(--primary)"
+                      : "var(--muted-foreground)",
+                  border:
+                    filter === cat
+                      ? "1px solid rgba(201,168,76,0.3)"
+                      : "1px solid var(--border)",
+                }}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
         </div>
         <button
           onClick={() => setShowLowOnly(!showLowOnly)}
@@ -185,7 +205,7 @@ export default function Inventory({ items }: InventoryProps) {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((item, i) => {
+              {sortedItems.map((item, i) => {
                 const isLow = item.currentBoxes < item.minThreshold;
                 const value =
                   item.currentBoxes * item.qtyPerBox * item.pricePerUnit;

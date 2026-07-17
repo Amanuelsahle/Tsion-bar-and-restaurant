@@ -109,7 +109,7 @@ export default function Sidebar({
       ) : null}
       <aside
         style={{ width: collapsed ? 64 : 220, transition: "width 0.25s ease" }}
-        className={`fixed left-0 top-0 h-screen flex flex-col z-40 overflow-hidden ${mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
+        className={`fixed left-0 top-0 h-dvh max-h-dvh flex flex-col z-40 overflow-hidden ${mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
         aria-label="Sidebar navigation"
       >
         <div
@@ -263,7 +263,12 @@ export default function Sidebar({
           </nav>
 
           {canAccessAdminPanel(role) ? (
-            <div className="px-3 pb-2">
+            <div
+              className="px-3"
+              style={{
+                paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))",
+              }}
+            >
               <button
                 type="button"
                 onClick={() => onNavigate("admin-panel")}
@@ -277,7 +282,10 @@ export default function Sidebar({
           {/* Collapse toggle */}
           <div
             className="p-3 border-t"
-            style={{ borderColor: "var(--border)" }}
+            style={{
+              borderColor: "var(--border)",
+              paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))",
+            }}
           >
             <button
               onClick={onToggle}
