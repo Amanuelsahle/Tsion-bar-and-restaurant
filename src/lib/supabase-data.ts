@@ -331,6 +331,7 @@ export async function getCashierSetting(key: string) {
       .from("cashier_settings")
       .select("*")
       .eq("key", key)
+      .order("updated_at", { ascending: false })
       .maybeSingle();
 
     if (error) {
@@ -378,7 +379,10 @@ export async function updateCashierSetting(key: string, value: number) {
   try {
     const { data, error } = await supabase
       .from("cashier_settings")
-      .upsert({ key, value, updated_at: now })
+      .upsert(
+        { key, value, created_at: now, updated_at: now },
+        { onConflict: "key" },
+      )
       .select("*")
       .single();
 

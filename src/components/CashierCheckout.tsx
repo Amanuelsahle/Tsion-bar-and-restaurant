@@ -5,6 +5,7 @@ import {
   createCashierReport,
   getBonos,
   getCashierSetting,
+  updateCashierSetting,
   type BonoRecord,
 } from "../lib/supabase-data";
 
@@ -20,6 +21,9 @@ export default function CashierCheckout() {
   const [initialMoney, setInitialMoney] = useState(0);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [savingInitialMoney, setSavingInitialMoney] = useState(false);
+  const [editingInitialMoney, setEditingInitialMoney] = useState(false);
+  const [initialMoneyInput, setInitialMoneyInput] = useState("0");
   const [message, setMessage] = useState<string | null>(null);
   const [inputs, setInputs] = useState<CheckoutInputs>({});
   const [specialPayouts, setSpecialPayouts] = useState("0");
@@ -37,7 +41,9 @@ export default function CashierCheckout() {
 
         const activeBonos = bonoData.filter((bono) => bono.is_active);
         setBonos(activeBonos);
-        setInitialMoney(savedInitialMoney || 0);
+        const parsedInitialMoney = Number(savedInitialMoney ?? 0);
+        setInitialMoney(parsedInitialMoney);
+        setInitialMoneyInput(String(parsedInitialMoney));
         setInputs(
           Object.fromEntries(
             activeBonos.map((bono) => [
@@ -88,6 +94,33 @@ export default function CashierCheckout() {
   const finalBalance = initialMoney + netBonoValue;
   const balanceCheck =
     Number(specialPayouts || 0) + Number(todayMoney || 0) - finalBalance;
+
+  const handleSaveInitialMoney = async () => {
+    const parsed = Number(initialMoneyInput);
+
+    if (Number.isNaN(parsed) || parsed < 0) {
+      setMessage("Please enter a valid initial money amount.");
+      return;
+    }
+
+    try {
+      setSavingInitialMoney(true);
+      setMessage(null);
+      const saved = await updateCashierSetting("initial_money", parsed);
+      setInitialMoney(saved.value);
+      setInitialMoneyInput(String(saved.value));
+      setEditingInitialMoney(false);
+      setMessage("Initial money saved successfully.");
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Unable to save initial money.",
+      );
+    } finally {
+      setSavingInitialMoney(false);
+    }
+  };
 
   const updateInput = (
     bonoId: string,
@@ -225,18 +258,59 @@ export default function CashierCheckout() {
           className="rounded-2xl border px-4 py-3"
           style={{ borderColor: "var(--border)" }}
         >
-          <p
-            className="text-xs uppercase tracking-wider"
-            style={{ color: "var(--muted-foreground)" }}
-          >
-            Initial Money
-          </p>
-          <p
-            className="mt-1 text-lg font-semibold"
-            style={{ color: "var(--foreground)" }}
-          >
-            {initialMoney.toLocaleString()} Birr
-          </p>
+          <div className="flex items-center justify-between gap-2">
+            <p
+              className="text-xs uppercase tracking-wider"
+              style={{ color: "var(--muted-foreground)" }}
+            >
+              Initial Money
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                if (editingInitialMoney) {
+                  void handleSaveInitialMoney();
+                } else {
+                  setEditingInitialMoney(true);
+                  setInitialMoneyInput(String(initialMoney));
+                }
+              }}
+              disabled={savingInitialMoney}
+              className="rounded-lg px-2.5 py-1 text-xs"
+              style={{
+                backgroundColor: "var(--secondary)",
+                color: "var(--foreground)",
+                border: "1px solid var(--border)",
+              }}
+            >
+              {savingInitialMoney
+                ? "Saving..."
+                : editingInitialMoney
+                  ? "Save"
+                  : "Edit"}
+            </button>
+          </div>
+          {editingInitialMoney ? (
+            <input
+              type="number"
+              min="0"
+              value={initialMoneyInput}
+              onChange={(event) => setInitialMoneyInput(event.target.value)}
+              className="mt-2 w-full rounded-lg px-2 py-2 text-sm outline-none"
+              style={{
+                backgroundColor: "var(--secondary)",
+                border: "1px solid var(--border)",
+                color: "var(--foreground)",
+              }}
+            />
+          ) : (
+            <p
+              className="mt-1 text-lg font-semibold"
+              style={{ color: "var(--foreground)" }}
+            >
+              {initialMoney.toLocaleString()} Birr
+            </p>
+          )}
         </div>
         <div
           className="rounded-2xl border px-4 py-3"
