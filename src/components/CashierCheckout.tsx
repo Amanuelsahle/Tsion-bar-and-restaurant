@@ -296,7 +296,7 @@ export default function CashierCheckout() {
               min="0"
               value={initialMoneyInput}
               onChange={(event) => setInitialMoneyInput(event.target.value)}
-              className="mt-2 w-full rounded-lg px-2 py-2 text-sm outline-none"
+              className="mt-2 w-full rounded-lg px-2 py-2 text-base md:text-sm outline-none"
               style={{
                 backgroundColor: "var(--secondary)",
                 border: "1px solid var(--border)",
