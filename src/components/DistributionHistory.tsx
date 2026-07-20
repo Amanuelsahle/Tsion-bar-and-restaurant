@@ -359,7 +359,7 @@ export default function DistributionHistory({
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by bar manager or ID..."
-          className="px-4 py-2.5 rounded-xl text-sm outline-none flex-1 min-w-48"
+          className="px-4 py-2.5 rounded-xl text-base md:text-sm outline-none flex-1 min-w-48"
           style={{
             backgroundColor: "var(--secondary)",
             border: "1px solid var(--border)",
@@ -391,7 +391,7 @@ export default function DistributionHistory({
           type="date"
           value={filterDate}
           onChange={(e) => setFilterDate(e.target.value)}
-          className="px-4 py-2.5 rounded-xl text-sm outline-none"
+          className="px-4 py-2.5 rounded-xl text-base md:text-sm outline-none"
           style={{
             backgroundColor: "var(--secondary)",
             border: "1px solid var(--border)",

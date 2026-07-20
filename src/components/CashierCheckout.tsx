@@ -24,6 +24,7 @@ export default function CashierCheckout() {
   const [inputs, setInputs] = useState<CheckoutInputs>({});
   const [specialPayouts, setSpecialPayouts] = useState("0");
   const [todayMoney, setTodayMoney] = useState("0");
+  const [todayTickets, setTodayTickets] = useState("0");
   const [cashierName, setCashierName] = useState("Almaz");
 
   useEffect(() => {
@@ -78,8 +79,10 @@ export default function CashierCheckout() {
   );
 
   const netBonoValue = useMemo(
-    () => rows.reduce((sum, row) => sum + row.totalAmount, 0),
-    [rows],
+    () =>
+      rows.reduce((sum, row) => sum + row.totalAmount, 0) +
+      Number(todayTickets || 0),
+    [rows, todayTickets],
   );
 
   const finalBalance = initialMoney + netBonoValue;
@@ -138,6 +141,7 @@ export default function CashierCheckout() {
       setMessage("Checkout saved successfully.");
       setSpecialPayouts("0");
       setTodayMoney("0");
+      setTodayTickets("0");
       setInputs(
         Object.fromEntries(
           bonos.map((bono) => [bono.id, { additional: "0", remaining: "0" }]),
@@ -354,7 +358,7 @@ export default function CashierCheckout() {
                         onChange={(event) =>
                           updateInput(row.id, "additional", event.target.value)
                         }
-                        className="w-full min-w-[90px] rounded-lg px-2 py-2 text-sm outline-none sm:w-24"
+                        className="w-full min-w-22.5 rounded-lg px-2 py-2 text-base md:text-sm outline-none sm:w-24"
                         style={{
                           backgroundColor: "var(--secondary)",
                           border: "1px solid var(--border)",
@@ -370,7 +374,7 @@ export default function CashierCheckout() {
                         onChange={(event) =>
                           updateInput(row.id, "remaining", event.target.value)
                         }
-                        className="w-full min-w-[90px] rounded-lg px-2 py-2 text-sm outline-none sm:w-24"
+                        className="w-full min-w-22.5 rounded-lg px-2 py-2 text-base md:text-sm outline-none sm:w-24"
                         style={{
                           backgroundColor: "var(--secondary)",
                           border: "1px solid var(--border)",
@@ -397,6 +401,37 @@ export default function CashierCheckout() {
               )}
             </tbody>
           </table>
+        </div>
+      </div>
+
+      <div
+        className="mt-6 rounded-2xl border p-4"
+        style={{
+          borderColor: "var(--border)",
+          backgroundColor: "rgba(255,255,255,0.03)",
+        }}
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="font-medium" style={{ color: "var(--foreground)" }}>
+              Today&apos;s Tickets
+            </p>
+            <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
+              Enter today&apos;s ticket money and add it to the net bono value.
+            </p>
+          </div>
+          <input
+            type="number"
+            min="0"
+            value={todayTickets}
+            onChange={(event) => setTodayTickets(event.target.value)}
+            className="w-full min-w-35 rounded-lg px-3 py-2 text-base md:text-sm outline-none sm:w-40"
+            style={{
+              backgroundColor: "var(--secondary)",
+              border: "1px solid var(--border)",
+              color: "var(--foreground)",
+            }}
+          />
         </div>
       </div>
 
@@ -444,7 +479,7 @@ export default function CashierCheckout() {
                     min="0"
                     value={specialPayouts}
                     onChange={(event) => setSpecialPayouts(event.target.value)}
-                    className="w-full min-w-[120px] rounded-lg px-2 py-2 text-sm outline-none sm:w-32"
+                    className="w-full min-w-30 rounded-lg px-2 py-2 text-base md:text-sm outline-none sm:w-32"
                     style={{
                       backgroundColor: "var(--secondary)",
                       border: "1px solid var(--border)",
@@ -475,7 +510,7 @@ export default function CashierCheckout() {
                     min="0"
                     value={todayMoney}
                     onChange={(event) => setTodayMoney(event.target.value)}
-                    className="w-full min-w-[120px] rounded-lg px-2 py-2 text-sm outline-none sm:w-32"
+                    className="w-full min-w-30 rounded-lg px-2 py-2 text-base md:text-sm outline-none sm:w-32"
                     style={{
                       backgroundColor: "var(--secondary)",
                       border: "1px solid var(--border)",

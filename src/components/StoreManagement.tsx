@@ -168,7 +168,7 @@ export default function StoreManagement({
                 value={addBoxes || ""}
                 onChange={(e) => setAddBoxes(+e.target.value)}
                 placeholder="e.g. 20"
-                className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
+                className="w-full px-4 py-2.5 rounded-xl text-base md:text-sm outline-none"
                 style={{
                   backgroundColor: "var(--secondary)",
                   border: "1px solid var(--border)",
@@ -194,7 +194,7 @@ export default function StoreManagement({
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 placeholder="e.g. Monthly restock"
-                className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
+                className="w-full px-4 py-2.5 rounded-xl text-base md:text-sm outline-none"
                 style={{
                   backgroundColor: "var(--secondary)",
                   border: "1px solid var(--border)",

@@ -330,7 +330,7 @@ export default function ItemManagement({
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   placeholder="e.g. St. George Beer"
-                  className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
+                  className="w-full px-4 py-2.5 rounded-xl text-base md:text-sm outline-none"
                   style={{
                     backgroundColor: "var(--secondary)",
                     border: "1px solid var(--border)",
@@ -385,7 +385,7 @@ export default function ItemManagement({
                   onChange={(e) =>
                     setForm({ ...form, qtyPerBox: +e.target.value })
                   }
-                  className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
+                  className="w-full px-4 py-2.5 rounded-xl text-base md:text-sm outline-none"
                   style={{
                     backgroundColor: "var(--secondary)",
                     border: "1px solid var(--border)",
@@ -412,7 +412,7 @@ export default function ItemManagement({
                   onChange={(e) =>
                     setForm({ ...form, pricePerUnit: +e.target.value })
                   }
-                  className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
+                  className="w-full px-4 py-2.5 rounded-xl text-base md:text-sm outline-none"
                   style={{
                     backgroundColor: "var(--secondary)",
                     border: "1px solid var(--border)",
@@ -441,7 +441,7 @@ export default function ItemManagement({
                   onChange={(e) =>
                     setForm({ ...form, currentBoxes: +e.target.value })
                   }
-                  className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
+                  className="w-full px-4 py-2.5 rounded-xl text-base md:text-sm outline-none"
                   style={{
                     backgroundColor: "var(--secondary)",
                     border: "1px solid var(--border)",
@@ -468,7 +468,7 @@ export default function ItemManagement({
                   onChange={(e) =>
                     setForm({ ...form, minThreshold: +e.target.value })
                   }
-                  className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
+                  className="w-full px-4 py-2.5 rounded-xl text-base md:text-sm outline-none"
                   style={{
                     backgroundColor: "var(--secondary)",
                     border: "1px solid var(--border)",

@@ -335,15 +335,15 @@ export default function GiveToBar({ items, onSave }: GiveToBarProps) {
       </div>
 
       <div
-        className="rounded-2xl p-6 space-y-6"
+        className="rounded-2xl p-6 space-y-6 overflow-hidden"
         style={{
           backgroundColor: "var(--card)",
           border: "1px solid var(--border)",
         }}
       >
         {/* Header fields */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-1.5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="w-full space-y-1.5 overflow-hidden">
             <label
               className="text-xs font-medium"
               style={{ color: "var(--muted-foreground)" }}
@@ -354,12 +354,18 @@ export default function GiveToBar({ items, onSave }: GiveToBarProps) {
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
+              className="w-full px-4 py-2.5 rounded-xl text-sm outline-none min-w-0"
               style={{
                 backgroundColor: "var(--secondary)",
                 border: "1px solid var(--border)",
                 color: "var(--foreground)",
                 colorScheme: "dark",
+                boxSizing: "border-box",
+                maxWidth: "100%",
+                display: "block",
+                WebkitAppearance: "none",
+                appearance: "none",
+                overflow: "hidden",
               }}
               onFocus={(e) =>
                 (e.currentTarget.style.borderColor = "var(--primary)")
@@ -369,7 +375,7 @@ export default function GiveToBar({ items, onSave }: GiveToBarProps) {
               }
             />
           </div>
-          <div className="space-y-1.5">
+          <div className="w-full space-y-1.5 overflow-hidden">
             <label
               className="text-xs font-medium"
               style={{ color: "var(--muted-foreground)" }}
@@ -380,11 +386,17 @@ export default function GiveToBar({ items, onSave }: GiveToBarProps) {
               value={barMan}
               onChange={(e) => setBarMan(e.target.value)}
               required
-              className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
+              className="w-full px-4 py-2.5 rounded-xl text-sm outline-none min-w-0"
               style={{
                 backgroundColor: "var(--secondary)",
                 border: "1px solid var(--border)",
                 color: "var(--foreground)",
+                boxSizing: "border-box",
+                maxWidth: "100%",
+                display: "block",
+                WebkitAppearance: "none",
+                appearance: "none",
+                overflow: "hidden",
               }}
               onFocus={(e) =>
                 (e.currentTarget.style.borderColor = "var(--primary)")
@@ -467,7 +479,7 @@ export default function GiveToBar({ items, onSave }: GiveToBarProps) {
                           backgroundColor: "var(--secondary)",
                           border: "1px solid var(--border)",
                           color: "var(--foreground)",
-                          minWidth: 180,
+                          minWidth: window.innerWidth < 768 ? 120 : 180,
                         }}
                         onFocus={(e) =>
                           (e.currentTarget.style.borderColor = "var(--primary)")
@@ -490,7 +502,7 @@ export default function GiveToBar({ items, onSave }: GiveToBarProps) {
                         min={0}
                         value={row.boxes || ""}
                         onChange={(e) => updateRow(i, "boxes", +e.target.value)}
-                        className="w-24 px-3 py-2 rounded-lg text-sm outline-none"
+                        className="w-24 px-3 py-2 rounded-lg text-base md:text-sm outline-none"
                         style={{
                           backgroundColor: "var(--secondary)",
                           border: "1px solid var(--border)",

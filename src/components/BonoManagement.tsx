@@ -337,7 +337,7 @@ export default function BonoManagement() {
                   setForm((prev) => ({ ...prev, name: event.target.value }))
                 }
                 placeholder="e.g. Beer Bono"
-                className="w-full rounded-xl px-3 py-2.5 text-sm outline-none"
+                className="w-full rounded-xl px-3 py-2.5 text-base md:text-sm outline-none"
                 style={{
                   backgroundColor: "var(--secondary)",
                   border: "1px solid var(--border)",
@@ -359,7 +359,7 @@ export default function BonoManagement() {
                 onChange={(event) =>
                   setForm((prev) => ({ ...prev, quantity: event.target.value }))
                 }
-                className="w-full rounded-xl px-3 py-2.5 text-sm outline-none"
+                className="w-full rounded-xl px-3 py-2.5 text-base md:text-sm outline-none"
                 style={{
                   backgroundColor: "var(--secondary)",
                   border: "1px solid var(--border)",
@@ -381,7 +381,7 @@ export default function BonoManagement() {
                 onChange={(event) =>
                   setForm((prev) => ({ ...prev, price: event.target.value }))
                 }
-                className="w-full rounded-xl px-3 py-2.5 text-sm outline-none"
+                className="w-full rounded-xl px-3 py-2.5 text-base md:text-sm outline-none"
                 style={{
                   backgroundColor: "var(--secondary)",
                   border: "1px solid var(--border)",
