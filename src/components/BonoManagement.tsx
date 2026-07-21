@@ -4,8 +4,10 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 import {
   createBono,
   deleteBono,
+  getBonoOrder,
   getBonos,
   getCashierSetting,
+  saveBonoOrder,
   updateBono,
   updateCashierSetting,
   type BonoRecord,
@@ -36,12 +38,27 @@ export default function BonoManagement() {
   const [initialMoney, setInitialMoney] = useState(5000);
   const [editingInitialMoney, setEditingInitialMoney] = useState(false);
   const [initialMoneyInput, setInitialMoneyInput] = useState("5000");
+  const [reordering, setReordering] = useState(false);
 
   const loadBonos = async () => {
     try {
       setLoading(true);
       const data = await getBonos();
-      setBonos(data);
+      const order = await getBonoOrder();
+      const ordered = (() => {
+        if (!order.length) {
+          return data;
+        }
+
+        const byId = new Map(data.map((bono) => [bono.id, bono]));
+        const orderedBonos = order
+          .map((id) => byId.get(id))
+          .filter((bono): bono is BonoRecord => Boolean(bono));
+        const remaining = data.filter((bono) => !order.includes(bono.id));
+        return [...orderedBonos, ...remaining];
+      })();
+
+      setBonos(ordered);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load bonos.");
@@ -157,6 +174,26 @@ export default function BonoManagement() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to delete bono.");
     }
+  };
+
+  const reorderBonos = (bonoId: string, direction: "up" | "down") => {
+    setBonos((prev) => {
+      const index = prev.findIndex((bono) => bono.id === bonoId);
+      if (index === -1) {
+        return prev;
+      }
+
+      const targetIndex = direction === "up" ? index - 1 : index + 1;
+      if (targetIndex < 0 || targetIndex >= prev.length) {
+        return prev;
+      }
+
+      const next = [...prev];
+      const [moved] = next.splice(index, 1);
+      next.splice(targetIndex, 0, moved);
+      void saveBonoOrder(next.map((bono) => bono.id));
+      return next;
+    });
   };
 
   return (
@@ -506,6 +543,12 @@ export default function BonoManagement() {
                     className="px-4 py-3 text-left text-xs uppercase tracking-wider"
                     style={{ color: "var(--muted-foreground)" }}
                   >
+                    Arrange
+                  </th>
+                  <th
+                    className="px-4 py-3 text-left text-xs uppercase tracking-wider"
+                    style={{ color: "var(--muted-foreground)" }}
+                  >
                     Actions
                   </th>
                 </tr>
@@ -552,6 +595,51 @@ export default function BonoManagement() {
                       style={{ color: "var(--primary)" }}
                     >
                       {(bono.quantity * bono.price).toLocaleString()} Birr
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-col gap-1">
+                        <button
+                          type="button"
+                          onClick={() => reorderBonos(bono.id, "up")}
+                          disabled={
+                            bonos.findIndex((item) => item.id === bono.id) === 0
+                          }
+                          className="rounded-md px-2 py-1 text-xs"
+                          style={{
+                            backgroundColor: "var(--secondary)",
+                            color: "var(--foreground)",
+                            border: "1px solid var(--border)",
+                            opacity:
+                              bonos.findIndex((item) => item.id === bono.id) ===
+                              0
+                                ? 0.5
+                                : 1,
+                          }}
+                        >
+                          ↑
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => reorderBonos(bono.id, "down")}
+                          disabled={
+                            bonos.findIndex((item) => item.id === bono.id) ===
+                            bonos.length - 1
+                          }
+                          className="rounded-md px-2 py-1 text-xs"
+                          style={{
+                            backgroundColor: "var(--secondary)",
+                            color: "var(--foreground)",
+                            border: "1px solid var(--border)",
+                            opacity:
+                              bonos.findIndex((item) => item.id === bono.id) ===
+                              bonos.length - 1
+                                ? 0.5
+                                : 1,
+                          }}
+                        >
+                          ↓
+                        </button>
+                      </div>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex flex-wrap gap-2">

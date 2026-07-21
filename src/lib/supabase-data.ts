@@ -44,6 +44,7 @@ export type CashierReportRecord = {
 const BONO_STORAGE_KEY = "tsion-cashier-bonos";
 const CASHIER_SETTING_STORAGE_KEY = "tsion-cashier-settings";
 const CASHIER_REPORTS_STORAGE_KEY = "tsion-cashier-reports";
+const BONO_ORDER_SETTING_KEY = "bono_order";
 
 function getLocalBonos(): BonoRecord[] {
   if (typeof window === "undefined") return [];
@@ -63,6 +64,58 @@ function saveLocalBonos(bonos: BonoRecord[]) {
   if (typeof window === "undefined") return;
 
   window.localStorage.setItem(BONO_STORAGE_KEY, JSON.stringify(bonos));
+}
+
+export async function getBonoOrder(): Promise<string[]> {
+  if (!supabase) return [];
+
+  try {
+    const { data, error } = await supabase
+      .from("cashier_settings")
+      .select("value")
+      .eq("key", BONO_ORDER_SETTING_KEY)
+      .maybeSingle();
+
+    if (error) {
+      if (isRemotePersistenceError(error)) {
+        return [];
+      }
+      throw error;
+    }
+
+    const value = data?.value;
+    if (typeof value === "string") {
+      try {
+        return JSON.parse(value) as string[];
+      } catch {
+        return [];
+      }
+    }
+
+    return [];
+  } catch {
+    return [];
+  }
+}
+
+export async function saveBonoOrder(order: string[]) {
+  if (!supabase) return;
+
+  const now = new Date().toISOString();
+
+  try {
+    await supabase.from("cashier_settings").upsert(
+      {
+        key: BONO_ORDER_SETTING_KEY,
+        value: JSON.stringify(order),
+        created_at: now,
+        updated_at: now,
+      },
+      { onConflict: "key" },
+    );
+  } catch {
+    // Ignore persistence failure and keep UI responsive.
+  }
 }
 
 function getLocalSettings(): CashierSettingRecord[] {

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   createCashierReport,
+  getBonoOrder,
   getBonos,
   getCashierSetting,
   updateCashierSetting,
@@ -15,8 +16,6 @@ interface CheckoutInputs {
     remaining: string;
   };
 }
-
-const BONO_ORDER_STORAGE_KEY = "tsion-cashier-bono-order";
 
 export default function CashierCheckout() {
   const [bonos, setBonos] = useState<BonoRecord[]>([]);
@@ -42,28 +41,20 @@ export default function CashierCheckout() {
         ]);
 
         const activeBonos = bonoData.filter((bono) => bono.is_active);
-        const savedOrder =
-          typeof window !== "undefined"
-            ? window.localStorage.getItem(BONO_ORDER_STORAGE_KEY)
-            : null;
+        const orderedIds = await getBonoOrder();
         const orderedBonos = (() => {
-          if (!savedOrder) {
+          if (!orderedIds.length) {
             return activeBonos;
           }
 
-          try {
-            const orderedIds = JSON.parse(savedOrder) as string[];
-            const byId = new Map(activeBonos.map((bono) => [bono.id, bono]));
-            const ordered = orderedIds
-              .map((id) => byId.get(id))
-              .filter((bono): bono is BonoRecord => Boolean(bono));
-            const remaining = activeBonos.filter(
-              (bono) => !orderedIds.includes(bono.id),
-            );
-            return [...ordered, ...remaining];
-          } catch {
-            return activeBonos;
-          }
+          const byId = new Map(activeBonos.map((bono) => [bono.id, bono]));
+          const ordered = orderedIds
+            .map((id) => byId.get(id))
+            .filter((bono): bono is BonoRecord => Boolean(bono));
+          const remaining = activeBonos.filter(
+            (bono) => !orderedIds.includes(bono.id),
+          );
+          return [...ordered, ...remaining];
         })();
 
         setBonos(orderedBonos);
@@ -161,33 +152,6 @@ export default function CashierCheckout() {
         [field]: value,
       },
     }));
-  };
-
-  const reorderBonos = (bonoId: string, direction: "up" | "down") => {
-    setBonos((prev) => {
-      const index = prev.findIndex((bono) => bono.id === bonoId);
-      if (index === -1) {
-        return prev;
-      }
-
-      const targetIndex = direction === "up" ? index - 1 : index + 1;
-      if (targetIndex < 0 || targetIndex >= prev.length) {
-        return prev;
-      }
-
-      const next = [...prev];
-      const [moved] = next.splice(index, 1);
-      next.splice(targetIndex, 0, moved);
-
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem(
-          BONO_ORDER_STORAGE_KEY,
-          JSON.stringify(next.map((bono) => bono.id)),
-        );
-      }
-
-      return next;
-    });
   };
 
   const handleSubmit = async () => {
@@ -524,49 +488,6 @@ export default function CashierCheckout() {
                           >
                             Net units: {row.effectiveQuantity}
                           </div>
-                        </div>
-                        <div className="flex flex-col gap-1">
-                          <button
-                            type="button"
-                            onClick={() => reorderBonos(row.id, "up")}
-                            disabled={
-                              rows.findIndex((item) => item.id === row.id) === 0
-                            }
-                            className="rounded-md px-2 py-1 text-xs"
-                            style={{
-                              backgroundColor: "var(--secondary)",
-                              color: "var(--foreground)",
-                              border: "1px solid var(--border)",
-                              opacity:
-                                rows.findIndex((item) => item.id === row.id) ===
-                                0
-                                  ? 0.5
-                                  : 1,
-                            }}
-                          >
-                            ↑
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => reorderBonos(row.id, "down")}
-                            disabled={
-                              rows.findIndex((item) => item.id === row.id) ===
-                              rows.length - 1
-                            }
-                            className="rounded-md px-2 py-1 text-xs"
-                            style={{
-                              backgroundColor: "var(--secondary)",
-                              color: "var(--foreground)",
-                              border: "1px solid var(--border)",
-                              opacity:
-                                rows.findIndex((item) => item.id === row.id) ===
-                                rows.length - 1
-                                  ? 0.5
-                                  : 1,
-                            }}
-                          >
-                            ↓
-                          </button>
                         </div>
                       </div>
                     </td>
