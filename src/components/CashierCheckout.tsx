@@ -16,6 +16,8 @@ interface CheckoutInputs {
   };
 }
 
+const BONO_ORDER_STORAGE_KEY = "tsion-cashier-bono-order";
+
 export default function CashierCheckout() {
   const [bonos, setBonos] = useState<BonoRecord[]>([]);
   const [initialMoney, setInitialMoney] = useState(0);
@@ -40,13 +42,37 @@ export default function CashierCheckout() {
         ]);
 
         const activeBonos = bonoData.filter((bono) => bono.is_active);
-        setBonos(activeBonos);
+        const savedOrder =
+          typeof window !== "undefined"
+            ? window.localStorage.getItem(BONO_ORDER_STORAGE_KEY)
+            : null;
+        const orderedBonos = (() => {
+          if (!savedOrder) {
+            return activeBonos;
+          }
+
+          try {
+            const orderedIds = JSON.parse(savedOrder) as string[];
+            const byId = new Map(activeBonos.map((bono) => [bono.id, bono]));
+            const ordered = orderedIds
+              .map((id) => byId.get(id))
+              .filter((bono): bono is BonoRecord => Boolean(bono));
+            const remaining = activeBonos.filter(
+              (bono) => !orderedIds.includes(bono.id),
+            );
+            return [...ordered, ...remaining];
+          } catch {
+            return activeBonos;
+          }
+        })();
+
+        setBonos(orderedBonos);
         const parsedInitialMoney = Number(savedInitialMoney ?? 0);
         setInitialMoney(parsedInitialMoney);
         setInitialMoneyInput(String(parsedInitialMoney));
         setInputs(
           Object.fromEntries(
-            activeBonos.map((bono) => [
+            orderedBonos.map((bono) => [
               bono.id,
               { additional: "0", remaining: "0" },
             ]),
@@ -135,6 +161,33 @@ export default function CashierCheckout() {
         [field]: value,
       },
     }));
+  };
+
+  const reorderBonos = (bonoId: string, direction: "up" | "down") => {
+    setBonos((prev) => {
+      const index = prev.findIndex((bono) => bono.id === bonoId);
+      if (index === -1) {
+        return prev;
+      }
+
+      const targetIndex = direction === "up" ? index - 1 : index + 1;
+      if (targetIndex < 0 || targetIndex >= prev.length) {
+        return prev;
+      }
+
+      const next = [...prev];
+      const [moved] = next.splice(index, 1);
+      next.splice(targetIndex, 0, moved);
+
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(
+          BONO_ORDER_STORAGE_KEY,
+          JSON.stringify(next.map((bono) => bono.id)),
+        );
+      }
+
+      return next;
+    });
   };
 
   const handleSubmit = async () => {
@@ -457,17 +510,64 @@ export default function CashierCheckout() {
                       />
                     </td>
                     <td className="px-4 py-3">
-                      <div
-                        className="font-semibold"
-                        style={{ color: "var(--primary)" }}
-                      >
-                        {row.totalAmount.toLocaleString()} Birr
-                      </div>
-                      <div
-                        className="text-xs"
-                        style={{ color: "var(--muted-foreground)" }}
-                      >
-                        Net units: {row.effectiveQuantity}
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <div
+                            className="font-semibold"
+                            style={{ color: "var(--primary)" }}
+                          >
+                            {row.totalAmount.toLocaleString()} Birr
+                          </div>
+                          <div
+                            className="text-xs"
+                            style={{ color: "var(--muted-foreground)" }}
+                          >
+                            Net units: {row.effectiveQuantity}
+                          </div>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <button
+                            type="button"
+                            onClick={() => reorderBonos(row.id, "up")}
+                            disabled={
+                              rows.findIndex((item) => item.id === row.id) === 0
+                            }
+                            className="rounded-md px-2 py-1 text-xs"
+                            style={{
+                              backgroundColor: "var(--secondary)",
+                              color: "var(--foreground)",
+                              border: "1px solid var(--border)",
+                              opacity:
+                                rows.findIndex((item) => item.id === row.id) ===
+                                0
+                                  ? 0.5
+                                  : 1,
+                            }}
+                          >
+                            ↑
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => reorderBonos(row.id, "down")}
+                            disabled={
+                              rows.findIndex((item) => item.id === row.id) ===
+                              rows.length - 1
+                            }
+                            className="rounded-md px-2 py-1 text-xs"
+                            style={{
+                              backgroundColor: "var(--secondary)",
+                              color: "var(--foreground)",
+                              border: "1px solid var(--border)",
+                              opacity:
+                                rows.findIndex((item) => item.id === row.id) ===
+                                rows.length - 1
+                                  ? 0.5
+                                  : 1,
+                            }}
+                          >
+                            ↓
+                          </button>
+                        </div>
                       </div>
                     </td>
                   </tr>
