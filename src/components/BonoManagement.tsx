@@ -17,6 +17,7 @@ interface BonoFormState {
   name: string;
   quantity: string;
   price: string;
+  category: "regular" | "fasting" | "non-fasting";
   isActive: boolean;
 }
 
@@ -24,6 +25,7 @@ const emptyForm: BonoFormState = {
   name: "",
   quantity: "",
   price: "",
+  category: "regular",
   isActive: true,
 };
 
@@ -126,6 +128,7 @@ export default function BonoManagement() {
           name: form.name.trim(),
           quantity,
           price,
+          category: form.category,
           is_active: form.isActive,
         });
         setBonos((prev) =>
@@ -136,6 +139,7 @@ export default function BonoManagement() {
           name: form.name.trim(),
           quantity,
           price,
+          category: form.category,
           is_active: form.isActive,
         });
         setBonos((prev) => [created, ...prev]);
@@ -157,6 +161,7 @@ export default function BonoManagement() {
       name: bono.name,
       quantity: String(bono.quantity),
       price: String(bono.price),
+      category: bono.category,
       isActive: bono.is_active,
     });
   };
@@ -434,6 +439,33 @@ export default function BonoManagement() {
                 className="mb-1 block text-sm"
                 style={{ color: "var(--muted-foreground)" }}
               >
+                Category
+              </label>
+              <select
+                value={form.category}
+                onChange={(event) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    category: event.target.value as BonoFormState["category"],
+                  }))
+                }
+                className="w-full rounded-xl px-3 py-2.5 text-sm outline-none"
+                style={{
+                  backgroundColor: "var(--secondary)",
+                  border: "1px solid var(--border)",
+                  color: "var(--foreground)",
+                }}
+              >
+                <option value="regular">Regular</option>
+                <option value="fasting">Fasting</option>
+                <option value="non-fasting">Non-Fasting</option>
+              </select>
+            </div>
+            <div>
+              <label
+                className="mb-1 block text-sm"
+                style={{ color: "var(--muted-foreground)" }}
+              >
                 Status
               </label>
               <select
@@ -534,6 +566,12 @@ export default function BonoManagement() {
                     className="px-4 py-3 text-left text-xs uppercase tracking-wider"
                     style={{ color: "var(--muted-foreground)" }}
                   >
+                    Category
+                  </th>
+                  <th
+                    className="px-4 py-3 text-left text-xs uppercase tracking-wider"
+                    style={{ color: "var(--muted-foreground)" }}
+                  >
                     Status
                   </th>
                   <th
@@ -579,6 +617,17 @@ export default function BonoManagement() {
                       style={{ color: "var(--foreground)" }}
                     >
                       {bono.price.toLocaleString()} Birr
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className="rounded-full px-2.5 py-1 text-xs font-medium capitalize"
+                        style={{
+                          backgroundColor: "rgba(255,255,255,0.06)",
+                          color: "var(--foreground)",
+                        }}
+                      >
+                        {bono.category}
+                      </span>
                     </td>
                     <td className="px-4 py-3">
                       <span

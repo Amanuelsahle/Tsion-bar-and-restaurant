@@ -31,6 +31,7 @@ export default function CashierCheckout() {
   const [todayMoney, setTodayMoney] = useState("");
   const [todayTickets, setTodayTickets] = useState("");
   const [cashierName, setCashierName] = useState("Almaz");
+  const [isFastingDay, setIsFastingDay] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -42,16 +43,23 @@ export default function CashierCheckout() {
 
         const activeBonos = bonoData.filter((bono) => bono.is_active);
         const orderedIds = await getBonoOrder();
-        const orderedBonos = (() => {
-          if (!orderedIds.length) {
-            return activeBonos;
+        const categoryFiltered = activeBonos.filter((bono) => {
+          if (isFastingDay) {
+            return bono.category === "fasting" || bono.category === "regular";
           }
 
-          const byId = new Map(activeBonos.map((bono) => [bono.id, bono]));
+          return bono.category === "non-fasting" || bono.category === "regular";
+        });
+        const orderedBonos = (() => {
+          if (!orderedIds.length) {
+            return categoryFiltered;
+          }
+
+          const byId = new Map(categoryFiltered.map((bono) => [bono.id, bono]));
           const ordered = orderedIds
             .map((id) => byId.get(id))
             .filter((bono): bono is BonoRecord => Boolean(bono));
-          const remaining = activeBonos.filter(
+          const remaining = categoryFiltered.filter(
             (bono) => !orderedIds.includes(bono.id),
           );
           return [...ordered, ...remaining];
@@ -78,7 +86,7 @@ export default function CashierCheckout() {
     };
 
     void loadData();
-  }, []);
+  }, [isFastingDay]);
 
   const rows = useMemo(
     () =>
@@ -247,7 +255,7 @@ export default function CashierCheckout() {
         </div>
       </div>
 
-      <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
         <div
           className="rounded-2xl border px-4 py-3"
           style={{ borderColor: "var(--border)" }}
@@ -271,6 +279,31 @@ export default function CashierCheckout() {
             <option value="Almaz">Almaz</option>
             <option value="Beza">Beza</option>
           </select>
+        </div>
+        <div
+          className="rounded-2xl border px-4 py-3"
+          style={{ borderColor: "var(--border)" }}
+        >
+          <p
+            className="text-xs uppercase tracking-wider"
+            style={{ color: "var(--muted-foreground)" }}
+          >
+            Day Mode
+          </p>
+          <button
+            type="button"
+            onClick={() => setIsFastingDay((prev) => !prev)}
+            className="mt-2 w-full rounded-lg px-3 py-2 text-sm font-medium"
+            style={{
+              backgroundColor: isFastingDay
+                ? "rgba(34,197,94,0.16)"
+                : "rgba(201,168,76,0.14)",
+              color: isFastingDay ? "#4ade80" : "var(--foreground)",
+              border: "1px solid var(--border)",
+            }}
+          >
+            {isFastingDay ? "Fasting Day" : "Regular Day"}
+          </button>
         </div>
         <div
           className="rounded-2xl border px-4 py-3"

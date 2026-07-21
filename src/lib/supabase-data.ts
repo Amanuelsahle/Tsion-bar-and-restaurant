@@ -5,6 +5,7 @@ export type BonoRecord = {
   name: string;
   quantity: number;
   price: number;
+  category: "regular" | "fasting" | "non-fasting";
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -46,6 +47,24 @@ const CASHIER_SETTING_STORAGE_KEY = "tsion-cashier-settings";
 const CASHIER_REPORTS_STORAGE_KEY = "tsion-cashier-reports";
 const BONO_ORDER_SETTING_KEY = "bono_order";
 
+function normalizeBonoRecord(bono: Partial<BonoRecord>): BonoRecord {
+  const category =
+    bono.category === "fasting" || bono.category === "non-fasting"
+      ? bono.category
+      : "regular";
+
+  return {
+    id: bono.id ?? `local-${Date.now()}`,
+    name: bono.name ?? "",
+    quantity: bono.quantity ?? 0,
+    price: bono.price ?? 0,
+    category,
+    is_active: bono.is_active ?? true,
+    created_at: bono.created_at ?? new Date().toISOString(),
+    updated_at: bono.updated_at ?? new Date().toISOString(),
+  };
+}
+
 function getLocalBonos(): BonoRecord[] {
   if (typeof window === "undefined") return [];
 
@@ -54,7 +73,11 @@ function getLocalBonos(): BonoRecord[] {
     if (!stored) return [];
 
     const parsed = JSON.parse(stored);
-    return Array.isArray(parsed) ? (parsed as BonoRecord[]) : [];
+    return Array.isArray(parsed)
+      ? (parsed as Partial<BonoRecord>[]).map((item) =>
+          normalizeBonoRecord(item),
+        )
+      : [];
   } catch {
     return [];
   }
@@ -239,7 +262,9 @@ export async function getBonos() {
       throw error;
     }
 
-    const bonos = (data ?? []) as BonoRecord[];
+    const bonos = (data ?? []).map((item) =>
+      normalizeBonoRecord(item as Partial<BonoRecord>),
+    );
     saveLocalBonos(bonos);
     return bonos;
   } catch {
@@ -305,6 +330,7 @@ export async function updateBono(
     name: updates.name ?? existing?.name ?? "",
     quantity: updates.quantity ?? existing?.quantity ?? 0,
     price: updates.price ?? existing?.price ?? 0,
+    category: updates.category ?? existing?.category ?? "regular",
     is_active: updates.is_active ?? existing?.is_active ?? true,
     created_at: existing?.created_at ?? now,
     updated_at: now,

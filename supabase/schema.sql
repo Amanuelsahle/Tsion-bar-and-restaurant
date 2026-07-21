@@ -57,6 +57,7 @@ create table if not exists public.cashier_bonos (
   name text not null,
   quantity integer not null default 0,
   price numeric(12,2) not null default 0,
+  category text not null default 'regular',
   is_active boolean not null default true,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
