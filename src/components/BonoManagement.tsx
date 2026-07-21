@@ -176,7 +176,7 @@ export default function BonoManagement() {
     }
   };
 
-  const reorderBonos = (bonoId: string, direction: "up" | "down") => {
+  const reorderBonos = async (bonoId: string, direction: "up" | "down") => {
     setBonos((prev) => {
       const index = prev.findIndex((bono) => bono.id === bonoId);
       if (index === -1) {
@@ -191,7 +191,10 @@ export default function BonoManagement() {
       const next = [...prev];
       const [moved] = next.splice(index, 1);
       next.splice(targetIndex, 0, moved);
-      void saveBonoOrder(next.map((bono) => bono.id));
+
+      const order = next.map((bono) => bono.id);
+      void saveBonoOrder(order);
+
       return next;
     });
   };
@@ -600,7 +603,7 @@ export default function BonoManagement() {
                       <div className="flex flex-col gap-1">
                         <button
                           type="button"
-                          onClick={() => reorderBonos(bono.id, "up")}
+                          onClick={() => void reorderBonos(bono.id, "up")}
                           disabled={
                             bonos.findIndex((item) => item.id === bono.id) === 0
                           }
@@ -620,7 +623,7 @@ export default function BonoManagement() {
                         </button>
                         <button
                           type="button"
-                          onClick={() => reorderBonos(bono.id, "down")}
+                          onClick={() => void reorderBonos(bono.id, "down")}
                           disabled={
                             bonos.findIndex((item) => item.id === bono.id) ===
                             bonos.length - 1

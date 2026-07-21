@@ -24,12 +24,12 @@ export default function CashierCheckout() {
   const [submitting, setSubmitting] = useState(false);
   const [savingInitialMoney, setSavingInitialMoney] = useState(false);
   const [editingInitialMoney, setEditingInitialMoney] = useState(false);
-  const [initialMoneyInput, setInitialMoneyInput] = useState("0");
+  const [initialMoneyInput, setInitialMoneyInput] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [inputs, setInputs] = useState<CheckoutInputs>({});
-  const [specialPayouts, setSpecialPayouts] = useState("0");
-  const [todayMoney, setTodayMoney] = useState("0");
-  const [todayTickets, setTodayTickets] = useState("0");
+  const [specialPayouts, setSpecialPayouts] = useState("");
+  const [todayMoney, setTodayMoney] = useState("");
+  const [todayTickets, setTodayTickets] = useState("");
   const [cashierName, setCashierName] = useState("Almaz");
 
   useEffect(() => {
@@ -65,7 +65,7 @@ export default function CashierCheckout() {
           Object.fromEntries(
             orderedBonos.map((bono) => [
               bono.id,
-              { additional: "0", remaining: "0" },
+              { additional: "", remaining: "" },
             ]),
           ),
         );
@@ -83,7 +83,7 @@ export default function CashierCheckout() {
   const rows = useMemo(
     () =>
       bonos.map((bono) => {
-        const current = inputs[bono.id] ?? { additional: "0", remaining: "0" };
+        const current = inputs[bono.id] ?? { additional: "", remaining: "" };
         const additional = Number(current.additional || 0);
         const remaining = Number(current.remaining || 0);
         const effectiveQuantity = Math.max(
@@ -144,12 +144,13 @@ export default function CashierCheckout() {
     field: "additional" | "remaining",
     value: string,
   ) => {
+    const normalized = value === "" ? "" : value;
     setInputs((prev) => ({
       ...prev,
       [bonoId]: {
-        additional: prev[bonoId]?.additional ?? "0",
-        remaining: prev[bonoId]?.remaining ?? "0",
-        [field]: value,
+        additional: prev[bonoId]?.additional ?? "",
+        remaining: prev[bonoId]?.remaining ?? "",
+        [field]: normalized,
       },
     }));
   };
@@ -189,12 +190,12 @@ export default function CashierCheckout() {
 
       await createCashierReport(report);
       setMessage("Checkout saved successfully.");
-      setSpecialPayouts("0");
-      setTodayMoney("0");
-      setTodayTickets("0");
+      setSpecialPayouts("");
+      setTodayMoney("");
+      setTodayTickets("");
       setInputs(
         Object.fromEntries(
-          bonos.map((bono) => [bono.id, { additional: "0", remaining: "0" }]),
+          bonos.map((bono) => [bono.id, { additional: "", remaining: "" }]),
         ),
       );
     } catch (error) {
@@ -445,7 +446,7 @@ export default function CashierCheckout() {
                       <input
                         type="number"
                         min="0"
-                        value={inputs[row.id]?.additional ?? "0"}
+                        value={inputs[row.id]?.additional ?? ""}
                         onChange={(event) =>
                           updateInput(row.id, "additional", event.target.value)
                         }
@@ -461,7 +462,7 @@ export default function CashierCheckout() {
                       <input
                         type="number"
                         min="0"
-                        value={inputs[row.id]?.remaining ?? "0"}
+                        value={inputs[row.id]?.remaining ?? ""}
                         onChange={(event) =>
                           updateInput(row.id, "remaining", event.target.value)
                         }

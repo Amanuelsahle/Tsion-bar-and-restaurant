@@ -72,49 +72,51 @@ export async function getBonoOrder(): Promise<string[]> {
   try {
     const { data, error } = await supabase
       .from("cashier_settings")
-      .select("value")
+      .select("order_payload")
       .eq("key", BONO_ORDER_SETTING_KEY)
       .maybeSingle();
 
     if (error) {
-      if (isRemotePersistenceError(error)) {
-        return [];
-      }
-      throw error;
+      console.error("Failed to load bono order from database", error);
+      return [];
     }
 
-    const value = data?.value;
-    if (typeof value === "string") {
-      try {
-        return JSON.parse(value) as string[];
-      } catch {
-        return [];
-      }
+    const orderPayload = data?.order_payload;
+    if (Array.isArray(orderPayload)) {
+      return orderPayload as string[];
     }
 
     return [];
-  } catch {
+  } catch (error) {
+    console.error("Failed to load bono order from database", error);
     return [];
   }
 }
 
 export async function saveBonoOrder(order: string[]) {
+  const normalizedOrder = order.filter(Boolean);
+
   if (!supabase) return;
 
   const now = new Date().toISOString();
 
   try {
-    await supabase.from("cashier_settings").upsert(
+    const { error } = await supabase.from("cashier_settings").upsert(
       {
         key: BONO_ORDER_SETTING_KEY,
-        value: JSON.stringify(order),
+        value: normalizedOrder.length,
+        order_payload: normalizedOrder,
         created_at: now,
         updated_at: now,
       },
       { onConflict: "key" },
     );
-  } catch {
-    // Ignore persistence failure and keep UI responsive.
+
+    if (error) {
+      console.error("Failed to save bono order to database", error);
+    }
+  } catch (error) {
+    console.error("Failed to save bono order to database", error);
   }
 }
 
