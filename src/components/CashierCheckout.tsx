@@ -29,6 +29,8 @@ export default function CashierCheckout() {
   const [message, setMessage] = useState<string | null>(null);
   const [inputs, setInputs] = useState<CheckoutInputs>({});
   const [specialPayouts, setSpecialPayouts] = useState("");
+  const [otherMoney1, setOtherMoney1] = useState("");
+  const [otherMoney2, setOtherMoney2] = useState("");
   const [todayMoney, setTodayMoney] = useState("");
   const [todayTickets, setTodayTickets] = useState("");
   const [cashierName, setCashierName] = useState("Almaz");
@@ -124,7 +126,11 @@ export default function CashierCheckout() {
 
   const finalBalance = initialMoney + netBonoValue;
   const balanceCheck =
-    Number(specialPayouts || 0) + Number(todayMoney || 0) - finalBalance;
+    Number(specialPayouts || 0) +
+    Number(otherMoney1 || 0) +
+    Number(otherMoney2 || 0) +
+    Number(todayMoney || 0) -
+    finalBalance;
 
   const handleSaveInitialMoney = async () => {
     const parsed = Number(initialMoneyInput);
@@ -189,6 +195,8 @@ export default function CashierCheckout() {
         net_bono_value: netBonoValue,
         final_balance: finalBalance,
         special_payouts: Number(specialPayouts || 0),
+        other_money_1: Number(otherMoney1 || 0),
+        other_money_2: Number(otherMoney2 || 0),
         today_money: Number(todayMoney || 0),
         balance_check: balanceCheck,
         items: rows.map((row) => ({
@@ -209,6 +217,8 @@ export default function CashierCheckout() {
       await createCashierReport(report);
       setMessage("Checkout saved successfully.");
       setSpecialPayouts("");
+      setOtherMoney1("");
+      setOtherMoney2("");
       setTodayMoney("");
       setTodayTickets("");
       setInputs(
@@ -647,6 +657,66 @@ export default function CashierCheckout() {
                     min="0"
                     value={specialPayouts}
                     onChange={(event) => setSpecialPayouts(event.target.value)}
+                    className="w-full min-w-30 rounded-lg px-2 py-2 text-base md:text-sm outline-none sm:w-32"
+                    style={{
+                      backgroundColor: "var(--secondary)",
+                      border: "1px solid var(--border)",
+                      color: "var(--foreground)",
+                    }}
+                  />
+                </td>
+              </tr>
+              <tr style={{ borderTop: "1px solid var(--border)" }}>
+                <td className="px-4 py-3">
+                  <div
+                    className="font-medium"
+                    style={{ color: "var(--foreground)" }}
+                  >
+                    Other Money 1
+                  </div>
+                  <div
+                    className="text-xs"
+                    style={{ color: "var(--muted-foreground)" }}
+                  >
+                    Additional cash or payout item 1.
+                  </div>
+                </td>
+                <td className="px-4 py-3">
+                  <input
+                    type="number"
+                    min="0"
+                    value={otherMoney1}
+                    onChange={(event) => setOtherMoney1(event.target.value)}
+                    className="w-full min-w-30 rounded-lg px-2 py-2 text-base md:text-sm outline-none sm:w-32"
+                    style={{
+                      backgroundColor: "var(--secondary)",
+                      border: "1px solid var(--border)",
+                      color: "var(--foreground)",
+                    }}
+                  />
+                </td>
+              </tr>
+              <tr style={{ borderTop: "1px solid var(--border)" }}>
+                <td className="px-4 py-3">
+                  <div
+                    className="font-medium"
+                    style={{ color: "var(--foreground)" }}
+                  >
+                    Other Money 2
+                  </div>
+                  <div
+                    className="text-xs"
+                    style={{ color: "var(--muted-foreground)" }}
+                  >
+                    Additional cash or payout item 2.
+                  </div>
+                </td>
+                <td className="px-4 py-3">
+                  <input
+                    type="number"
+                    min="0"
+                    value={otherMoney2}
+                    onChange={(event) => setOtherMoney2(event.target.value)}
                     className="w-full min-w-30 rounded-lg px-2 py-2 text-base md:text-sm outline-none sm:w-32"
                     style={{
                       backgroundColor: "var(--secondary)",

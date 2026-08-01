@@ -90,8 +90,10 @@ export default function CashierReports() {
           <div class="meta">Initial Money: ${report.initial_money.toLocaleString()} Birr</div>
           <div class="meta">Net Bono Value: ${report.net_bono_value.toLocaleString()} Birr</div>
           <div class="meta">Final Balance: ${report.final_balance.toLocaleString()} Birr</div>
-          <div class="meta">Special Payouts: ${report.special_payouts.toLocaleString()} Birr</div>
-          <div class="meta">Today&apos;s Money: ${report.today_money.toLocaleString()} Birr</div>
+          <div class="meta">Special Payouts: ${(report.special_payouts ?? 0).toLocaleString()} Birr</div>
+          <div class="meta">Other Money 1: ${(report.other_money_1 ?? 0).toLocaleString()} Birr</div>
+          <div class="meta">Other Money 2: ${(report.other_money_2 ?? 0).toLocaleString()} Birr</div>
+          <div class="meta">Today&apos;s Money: ${(report.today_money ?? 0).toLocaleString()} Birr</div>
           <div class="meta">Balance Check: ${report.balance_check.toLocaleString()} Birr</div>
           <table>
             <thead><tr><th>Bono</th><th>Qty</th><th>Price</th><th>Additional</th><th>Remaining</th><th>Another Remaining</th><th>Net Qty</th><th>Total</th></tr></thead>
@@ -379,7 +381,41 @@ export default function CashierReports() {
                     className="mt-1 font-semibold"
                     style={{ color: "var(--foreground)" }}
                   >
-                    {selectedReport.special_payouts.toLocaleString()} Birr
+                    {(selectedReport.special_payouts ?? 0).toLocaleString()} Birr
+                  </p>
+                </div>
+                <div
+                  className="rounded-2xl border px-4 py-3"
+                  style={{ borderColor: "var(--border)" }}
+                >
+                  <p
+                    className="text-xs uppercase tracking-wider"
+                    style={{ color: "var(--muted-foreground)" }}
+                  >
+                    Other Money 1
+                  </p>
+                  <p
+                    className="mt-1 font-semibold"
+                    style={{ color: "var(--foreground)" }}
+                  >
+                    {(selectedReport.other_money_1 ?? 0).toLocaleString()} Birr
+                  </p>
+                </div>
+                <div
+                  className="rounded-2xl border px-4 py-3"
+                  style={{ borderColor: "var(--border)" }}
+                >
+                  <p
+                    className="text-xs uppercase tracking-wider"
+                    style={{ color: "var(--muted-foreground)" }}
+                  >
+                    Other Money 2
+                  </p>
+                  <p
+                    className="mt-1 font-semibold"
+                    style={{ color: "var(--foreground)" }}
+                  >
+                    {(selectedReport.other_money_2 ?? 0).toLocaleString()} Birr
                   </p>
                 </div>
                 <div

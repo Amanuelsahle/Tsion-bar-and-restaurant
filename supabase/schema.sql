@@ -78,6 +78,8 @@ create table if not exists public.cashier_reports (
   net_bono_value numeric(12,2) not null default 0,
   final_balance numeric(12,2) not null default 0,
   special_payouts numeric(12,2) not null default 0,
+  other_money_1 numeric(12,2) not null default 0,
+  other_money_2 numeric(12,2) not null default 0,
   today_money numeric(12,2) not null default 0,
   balance_check numeric(12,2) not null default 0,
   items jsonb not null default '[]'::jsonb,

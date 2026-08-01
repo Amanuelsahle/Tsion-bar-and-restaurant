@@ -28,6 +28,8 @@ export type CashierReportRecord = {
   net_bono_value: number;
   final_balance: number;
   special_payouts: number;
+  other_money_1: number;
+  other_money_2: number;
   today_money: number;
   balance_check: number;
   items: Array<{
