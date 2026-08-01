@@ -37,6 +37,7 @@ export type CashierReportRecord = {
     price: number;
     additional: number;
     remaining: number;
+    additional_remaining: number;
     effective_quantity: number;
     total_amount: number;
   }>;

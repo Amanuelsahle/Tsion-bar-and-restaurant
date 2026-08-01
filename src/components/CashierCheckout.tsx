@@ -14,6 +14,7 @@ interface CheckoutInputs {
   [bonoId: string]: {
     additional: string;
     remaining: string;
+    additionalRemaining: string;
   };
 }
 
@@ -73,7 +74,7 @@ export default function CashierCheckout() {
           Object.fromEntries(
             orderedBonos.map((bono) => [
               bono.id,
-              { additional: "", remaining: "" },
+              { additional: "", remaining: "", additionalRemaining: "" },
             ]),
           ),
         );
@@ -91,12 +92,17 @@ export default function CashierCheckout() {
   const rows = useMemo(
     () =>
       bonos.map((bono) => {
-        const current = inputs[bono.id] ?? { additional: "", remaining: "" };
+        const current = inputs[bono.id] ?? {
+          additional: "",
+          remaining: "",
+          additionalRemaining: "",
+        };
         const additional = Number(current.additional || 0);
         const remaining = Number(current.remaining || 0);
+        const additionalRemaining = Number(current.additionalRemaining || 0);
         const effectiveQuantity = Math.max(
           0,
-          bono.quantity + additional - remaining,
+          bono.quantity + additional - remaining - additionalRemaining,
         );
         const totalAmount = effectiveQuantity * bono.price;
 
@@ -149,7 +155,7 @@ export default function CashierCheckout() {
 
   const updateInput = (
     bonoId: string,
-    field: "additional" | "remaining",
+    field: "additional" | "remaining" | "additionalRemaining",
     value: string,
   ) => {
     const normalized = value === "" ? "" : value;
@@ -158,6 +164,7 @@ export default function CashierCheckout() {
       [bonoId]: {
         additional: prev[bonoId]?.additional ?? "",
         remaining: prev[bonoId]?.remaining ?? "",
+        additionalRemaining: prev[bonoId]?.additionalRemaining ?? "",
         [field]: normalized,
       },
     }));
@@ -191,6 +198,9 @@ export default function CashierCheckout() {
           price: row.price,
           additional: Number(inputs[row.id]?.additional ?? 0),
           remaining: Number(inputs[row.id]?.remaining ?? 0),
+          additional_remaining: Number(
+            inputs[row.id]?.additionalRemaining ?? 0,
+          ),
           effective_quantity: row.effectiveQuantity,
           total_amount: row.totalAmount,
         })),
@@ -203,7 +213,10 @@ export default function CashierCheckout() {
       setTodayTickets("");
       setInputs(
         Object.fromEntries(
-          bonos.map((bono) => [bono.id, { additional: "", remaining: "" }]),
+          bonos.map((bono) => [
+            bono.id,
+            { additional: "", remaining: "", additionalRemaining: "" },
+          ]),
         ),
       );
     } catch (error) {
@@ -429,6 +442,12 @@ export default function CashierCheckout() {
                   className="px-4 py-3 text-left font-medium"
                   style={{ color: "var(--muted-foreground)" }}
                 >
+                  Another Remaining Bono
+                </th>
+                <th
+                  className="px-4 py-3 text-left font-medium"
+                  style={{ color: "var(--muted-foreground)" }}
+                >
                   Total Amount
                 </th>
               </tr>
@@ -437,7 +456,7 @@ export default function CashierCheckout() {
               {loading ? (
                 <tr>
                   <td
-                    colSpan={4}
+                    colSpan={5}
                     className="px-4 py-6 text-center"
                     style={{ color: "var(--muted-foreground)" }}
                   >
@@ -447,7 +466,7 @@ export default function CashierCheckout() {
               ) : rows.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={4}
+                    colSpan={5}
                     className="px-4 py-6 text-center"
                     style={{ color: "var(--muted-foreground)" }}
                   >
@@ -498,6 +517,26 @@ export default function CashierCheckout() {
                         value={inputs[row.id]?.remaining ?? ""}
                         onChange={(event) =>
                           updateInput(row.id, "remaining", event.target.value)
+                        }
+                        className="w-full min-w-22.5 rounded-lg px-2 py-2 text-base md:text-sm outline-none sm:w-24"
+                        style={{
+                          backgroundColor: "var(--secondary)",
+                          border: "1px solid var(--border)",
+                          color: "var(--foreground)",
+                        }}
+                      />
+                    </td>
+                    <td className="px-4 py-3">
+                      <input
+                        type="number"
+                        min="0"
+                        value={inputs[row.id]?.additionalRemaining ?? ""}
+                        onChange={(event) =>
+                          updateInput(
+                            row.id,
+                            "additionalRemaining",
+                            event.target.value,
+                          )
                         }
                         className="w-full min-w-22.5 rounded-lg px-2 py-2 text-base md:text-sm outline-none sm:w-24"
                         style={{

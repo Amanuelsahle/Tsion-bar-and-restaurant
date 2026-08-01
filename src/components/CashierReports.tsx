@@ -67,7 +67,7 @@ export default function CashierReports() {
     const rowsHtml = report.items
       .map(
         (item) =>
-          `<tr><td>${item.name}</td><td>${item.quantity}</td><td>${item.price}</td><td>${item.additional}</td><td>${item.remaining}</td><td>${item.effective_quantity}</td><td>${item.total_amount}</td></tr>`,
+          `<tr><td>${item.name}</td><td>${item.quantity}</td><td>${item.price}</td><td>${item.additional}</td><td>${item.remaining}</td><td>${item.additional_remaining}</td><td>${item.effective_quantity}</td><td>${item.total_amount}</td></tr>`,
       )
       .join("");
 
@@ -86,6 +86,7 @@ export default function CashierReports() {
         <body>
           <div class="title">Cashier Daily Report</div>
           <div class="meta">Date: ${new Date(report.created_at).toLocaleString()}</div>
+          <div class="meta">Cashier: ${report.cashier_name}</div>
           <div class="meta">Initial Money: ${report.initial_money.toLocaleString()} Birr</div>
           <div class="meta">Net Bono Value: ${report.net_bono_value.toLocaleString()} Birr</div>
           <div class="meta">Final Balance: ${report.final_balance.toLocaleString()} Birr</div>
@@ -93,7 +94,7 @@ export default function CashierReports() {
           <div class="meta">Today&apos;s Money: ${report.today_money.toLocaleString()} Birr</div>
           <div class="meta">Balance Check: ${report.balance_check.toLocaleString()} Birr</div>
           <table>
-            <thead><tr><th>Bono</th><th>Qty</th><th>Price</th><th>Additional</th><th>Remaining</th><th>Net Qty</th><th>Total</th></tr></thead>
+            <thead><tr><th>Bono</th><th>Qty</th><th>Price</th><th>Additional</th><th>Remaining</th><th>Another Remaining</th><th>Net Qty</th><th>Total</th></tr></thead>
             <tbody>
               ${rowsHtml}
             </tbody>
