@@ -14,6 +14,7 @@ import Reports from "../../components/Reports";
 import BonoManagement from "../../components/BonoManagement";
 import CashierCheckout from "../../components/CashierCheckout";
 import CashierReports from "../../components/CashierReports";
+import CashierAnalytics from "../../components/CashierAnalytics";
 import {
   createDistribution,
   createProduct,
@@ -50,6 +51,7 @@ type PageId =
   | "cashier-bonos"
   | "cashier-checkout"
   | "cashier-reports"
+  | "cashier-analytics"
   | "admin-panel";
 
 export default function DashboardPage() {
@@ -385,6 +387,8 @@ export default function DashboardPage() {
         return <CashierCheckout />;
       case "cashier-reports":
         return <CashierReports />;
+      case "cashier-analytics":
+        return <CashierAnalytics />;
       case "admin-panel":
         return (
           <AdminPanel role={role} onClose={() => setCurrentPage("dashboard")} />

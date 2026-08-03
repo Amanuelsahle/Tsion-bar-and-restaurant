@@ -119,13 +119,13 @@ export default function CashierReports() {
               className="text-2xl font-bold font-display"
               style={{ color: "var(--foreground)" }}
             >
-              Cashier Reports
+              Checkout History
             </h2>
             <p
               className="mt-2 text-sm"
               style={{ color: "var(--muted-foreground)" }}
             >
-              Review saved daily cashier checkout reports and print or export
+              Review saved daily cashier checkout records and print or export
               them.
             </p>
           </div>
