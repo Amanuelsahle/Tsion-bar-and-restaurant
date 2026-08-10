@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   WORK_ROLES,
   type Employee,
@@ -62,6 +62,14 @@ export default function HRManagement({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [notesDraft, setNotesDraft] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    }
+  }, [selectedEmp, mobileTab]);
 
   const activeEmployees = employees.filter(
     (e) => (e.status || "active") === "active",
