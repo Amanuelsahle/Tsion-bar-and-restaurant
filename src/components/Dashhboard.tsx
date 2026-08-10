@@ -9,7 +9,7 @@ import {
   Line,
   CartesianGrid,
 } from "recharts";
-import type { Item, Transaction } from "../lib/mockData";
+import type { Item, Transaction } from "../lib/types";
 
 import type { UserRole } from "../lib/roles";
 

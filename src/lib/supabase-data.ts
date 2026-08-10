@@ -734,3 +734,163 @@ export async function createDistribution(
 
   return distData as DistributionRecord;
 }
+
+export type EmployeeRecord = {
+  id: string;
+  name: string;
+  hire_date: string;
+  role: string;
+  base_salary: number;
+  notes: string;
+  status?: "active" | "inactive";
+  created_at: string;
+  updated_at: string;
+  salary_transactions?: SalaryTransactionRecord[];
+};
+
+export type SalaryTransactionRecord = {
+  id: string;
+  employee_id: string;
+  date: string;
+  type: "payment" | "advance" | "increase";
+  amount: number;
+  note: string;
+  created_at: string;
+};
+
+export async function getEmployees(): Promise<EmployeeRecord[]> {
+  if (!supabase) return [];
+  try {
+    const { data: emps, error: empsErr } = await supabase
+      .from("employees")
+      .select("*, salary_transactions(*)")
+      .order("created_at", { ascending: false });
+
+    if (empsErr) {
+      console.error("Failed to load employees", empsErr);
+      return [];
+    }
+
+    return (emps as EmployeeRecord[]) ?? [];
+  } catch (err) {
+    console.error("Failed to load employees", err);
+    return [];
+  }
+}
+
+export async function createEmployee(
+  payload: Omit<EmployeeRecord, "id" | "created_at" | "updated_at">,
+): Promise<EmployeeRecord> {
+  if (!supabase) {
+    throw new Error("Supabase is not configured");
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("employees")
+      .insert({
+        name: payload.name,
+        hire_date: payload.hire_date,
+        role: payload.role,
+        base_salary: payload.base_salary,
+        notes: payload.notes ?? "",
+        status: payload.status ?? "active",
+      })
+      .select()
+      .single();
+
+    if (error) {
+      if (error.code === "PGRST204" || error.message?.includes("status")) {
+        const { data: fallbackData, error: fallbackErr } = await supabase
+          .from("employees")
+          .insert({
+            name: payload.name,
+            hire_date: payload.hire_date,
+            role: payload.role,
+            base_salary: payload.base_salary,
+            notes: payload.notes ?? "",
+          })
+          .select()
+          .single();
+        if (fallbackErr) throw fallbackErr;
+        return { ...(fallbackData as EmployeeRecord), status: payload.status ?? "active" };
+      }
+      throw error;
+    }
+    return data as EmployeeRecord;
+  } catch (err) {
+    throw err;
+  }
+}
+
+export async function updateEmployee(
+  id: string,
+  payload: Partial<Omit<EmployeeRecord, "id" | "created_at">>,
+): Promise<EmployeeRecord> {
+  if (!supabase) {
+    throw new Error("Supabase is not configured");
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("employees")
+      .update({
+        ...payload,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) {
+      if ((error.code === "PGRST204" || error.message?.includes("status")) && "status" in payload) {
+        const { status, ...payloadWithoutStatus } = payload;
+        const { data: fallbackData, error: fallbackErr } = await supabase
+          .from("employees")
+          .update({
+            ...payloadWithoutStatus,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", id)
+          .select()
+          .single();
+        if (fallbackErr) throw fallbackErr;
+        return { ...(fallbackData as EmployeeRecord), status };
+      }
+      throw error;
+    }
+    return data as EmployeeRecord;
+  } catch (err) {
+    throw err;
+  }
+}
+
+export async function deleteEmployee(id: string): Promise<void> {
+  if (!supabase) return;
+  const { error } = await supabase.from("employees").delete().eq("id", id);
+  if (error) throw error;
+}
+
+export async function createSalaryTransaction(
+  payload: Omit<SalaryTransactionRecord, "id" | "created_at">,
+): Promise<SalaryTransactionRecord> {
+  if (!supabase) {
+    throw new Error("Supabase is not configured");
+  }
+
+  const { data, error } = await supabase
+    .from("salary_transactions")
+    .insert({
+      employee_id: payload.employee_id,
+      date: payload.date,
+      type: payload.type,
+      amount: payload.amount,
+      note: payload.note ?? "",
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as SalaryTransactionRecord;
+}
+

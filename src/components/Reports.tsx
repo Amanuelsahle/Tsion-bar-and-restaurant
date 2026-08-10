@@ -13,7 +13,7 @@ import {
   Line,
   CartesianGrid,
 } from "recharts";
-import type { Item, Transaction } from "../lib/mockData";
+import type { Item, Transaction } from "../lib/types";
 
 interface ReportsProps {
   items: Item[];

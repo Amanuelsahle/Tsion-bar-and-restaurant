@@ -52,6 +52,10 @@ export function canManageUsers(role: UserRole) {
   return role === "super_admin";
 }
 
+export function canAccessHRManagement(role: UserRole) {
+  return role === "super_admin";
+}
+
 export function getRoleLabel(role: UserRole) {
   switch (role) {
     case "super_admin":

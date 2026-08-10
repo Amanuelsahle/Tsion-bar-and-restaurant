@@ -102,6 +102,135 @@ export const initialTransactions: Transaction[] = [
   },
 ];
 
+export type WorkRole =
+  | "Manager"
+  | "Bar Man"
+  | "Cashier"
+  | "Waiter"
+  | "Chef"
+  | "Sanitary"
+  | "Kitchen Assistant"
+  | "Security";
+
+export const WORK_ROLES: WorkRole[] = [
+  "Manager", "Bar Man", "Cashier", "Waiter", "Chef",
+  "Sanitary", "Kitchen Assistant", "Security",
+];
+
+export interface SalaryTransaction {
+  id: string;
+  date: string;
+  type: "payment" | "advance" | "deduction" | "increase";
+  amount: number;
+  note: string;
+}
+
+export interface Employee {
+  id: string;
+  name: string;
+  hireDate: string;
+  role: WorkRole;
+  baseSalary: number;
+  paidThisMonth: number;
+  history: SalaryTransaction[];
+  notes: string;
+}
+
+export const initialEmployees: Employee[] = [
+  {
+    id: "E001", name: "Tigist Bekele", hireDate: "2023-03-15", role: "Manager",
+    baseSalary: 12000, paidThisMonth: 0, notes: "",
+    history: [
+      { id: "ST001", date: "2026-06-30", type: "payment", amount: 12000, note: "June salary" },
+      { id: "ST002", date: "2026-06-10", type: "advance", amount: 3000, note: "Advance request" },
+    ],
+  },
+  {
+    id: "E002", name: "Selam Tesfaye", hireDate: "2023-06-01", role: "Bar Man",
+    baseSalary: 7500, paidThisMonth: 0, notes: "",
+    history: [
+      { id: "ST003", date: "2026-06-30", type: "payment", amount: 7500, note: "June salary" },
+    ],
+  },
+  {
+    id: "E003", name: "Biniam Haile", hireDate: "2024-01-10", role: "Bar Man",
+    baseSalary: 7200, paidThisMonth: 0, notes: "",
+    history: [
+      { id: "ST004", date: "2026-06-30", type: "payment", amount: 7200, note: "June salary" },
+      { id: "ST005", date: "2026-07-03", type: "advance", amount: 2000, note: "Emergency advance" },
+    ],
+  },
+  {
+    id: "E004", name: "Meron Alemu", hireDate: "2023-09-20", role: "Cashier",
+    baseSalary: 6500, paidThisMonth: 0, notes: "",
+    history: [
+      { id: "ST006", date: "2026-06-30", type: "payment", amount: 6500, note: "June salary" },
+    ],
+  },
+  {
+    id: "E005", name: "Yonas Bekele", hireDate: "2024-02-14", role: "Cashier",
+    baseSalary: 6500, paidThisMonth: 0, notes: "",
+    history: [],
+  },
+  {
+    id: "E006", name: "Hana Girma", hireDate: "2022-11-05", role: "Waiter",
+    baseSalary: 5000, paidThisMonth: 0, notes: "",
+    history: [
+      { id: "ST007", date: "2026-06-30", type: "payment", amount: 5000, note: "June salary" },
+      { id: "ST008", date: "2026-06-15", type: "deduction", amount: 500, note: "Late arrival penalty" },
+    ],
+  },
+  {
+    id: "E007", name: "Dawit Tadesse", hireDate: "2023-04-18", role: "Waiter",
+    baseSalary: 5000, paidThisMonth: 0, notes: "",
+    history: [
+      { id: "ST009", date: "2026-06-30", type: "payment", amount: 5000, note: "June salary" },
+    ],
+  },
+  {
+    id: "E008", name: "Aberash Demeke", hireDate: "2021-08-22", role: "Chef",
+    baseSalary: 11000, paidThisMonth: 0, notes: "",
+    history: [
+      { id: "ST010", date: "2026-06-30", type: "payment", amount: 11000, note: "June salary" },
+      { id: "ST011", date: "2026-05-01", type: "increase", amount: 1000, note: "Annual raise" },
+    ],
+  },
+  {
+    id: "E009", name: "Lemlem Woldemariam", hireDate: "2024-05-03", role: "Chef",
+    baseSalary: 9500, paidThisMonth: 0, notes: "",
+    history: [
+      { id: "ST012", date: "2026-06-30", type: "payment", amount: 9500, note: "June salary" },
+    ],
+  },
+  {
+    id: "E010", name: "Tesfaye Kebede", hireDate: "2023-07-11", role: "Kitchen Assistant",
+    baseSalary: 4200, paidThisMonth: 0, notes: "",
+    history: [
+      { id: "ST013", date: "2026-06-30", type: "payment", amount: 4200, note: "June salary" },
+    ],
+  },
+  {
+    id: "E011", name: "Almaz Hailu", hireDate: "2024-03-28", role: "Sanitary",
+    baseSalary: 3800, paidThisMonth: 0, notes: "",
+    history: [],
+  },
+  {
+    id: "E012", name: "Mulugeta Assefa", hireDate: "2022-12-01", role: "Security",
+    baseSalary: 5500, paidThisMonth: 0, notes: "",
+    history: [
+      { id: "ST014", date: "2026-06-30", type: "payment", amount: 5500, note: "June salary" },
+      { id: "ST015", date: "2026-07-01", type: "advance", amount: 1500, note: "School fees advance" },
+    ],
+  },
+  {
+    id: "E013", name: "Solomon Teka", hireDate: "2023-10-15", role: "Security",
+    baseSalary: 5500, paidThisMonth: 0, notes: "",
+    history: [
+      { id: "ST016", date: "2026-06-30", type: "payment", amount: 5500, note: "June salary" },
+    ],
+  },
+];
+
 export const initialStockHistory: StockHistory[] = [
   { id: "SH001", itemId: "1", date: "2026-07-05", type: "in", boxes: 50, note: "Monthly restock" },
   { id: "SH002", itemId: "2", date: "2026-07-05", type: "in", boxes: 30, note: "Monthly restock" },

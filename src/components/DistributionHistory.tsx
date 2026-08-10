@@ -1,6 +1,6 @@
 import { useState } from "react";
-import type { Item, Transaction } from "../lib/mockData";
-import { BAR_MANAGERS } from "../lib/mockData";
+import type { Item, Transaction } from "../lib/types";
+import { BAR_MANAGERS } from "../lib/types";
 import { openReceiptWindow } from "../lib/receipt";
 
 interface DistributionHistoryProps {

@@ -15,14 +15,20 @@ import BonoManagement from "../../components/BonoManagement";
 import CashierCheckout from "../../components/CashierCheckout";
 import CashierReports from "../../components/CashierReports";
 import CashierAnalytics from "../../components/CashierAnalytics";
+import HRManagement from "../../components/hr-management/HRManagement";
 import {
   createDistribution,
+  createEmployee,
   createProduct,
+  createSalaryTransaction,
   createStockMovement,
+  deleteEmployee,
   deleteProduct,
   getDistributions,
+  getEmployees,
   getProducts,
   getStockMovements,
+  updateEmployee,
   updateProduct,
   type DistributionRecord,
   type ProductRecord,
@@ -30,9 +36,17 @@ import {
 } from "../../lib/supabase-data";
 import { supabase } from "../../lib/supabase";
 import AdminPanel from "../../components/AdminPanel";
-import type { Item, StockHistory, Transaction } from "../../lib/mockData";
+import {
+  type Employee,
+  type Item,
+  type SalaryTransaction,
+  type StockHistory,
+  type Transaction,
+  type WorkRole,
+} from "../../lib/types";
 import {
   canAccessAdminPanel,
+  canAccessHRManagement,
   canAccessManagerFeatures,
   resolveEffectiveRole,
   serializeRoleForProfile,
@@ -52,6 +66,7 @@ type PageId =
   | "cashier-checkout"
   | "cashier-reports"
   | "cashier-analytics"
+  | "hr-management"
   | "admin-panel";
 
 export default function DashboardPage() {
@@ -63,6 +78,7 @@ export default function DashboardPage() {
   const [items, setItems] = useState<Item[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [stockHistory, setStockHistory] = useState<StockHistory[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -109,10 +125,11 @@ export default function DashboardPage() {
 
     const loadData = async () => {
       try {
-        const [products, stockMoves, dists] = await Promise.all([
+        const [products, stockMoves, dists, empRecords] = await Promise.all([
           getProducts(),
           getStockMovements(),
           getDistributions(),
+          getEmployees(),
         ]);
 
         const mappedItems: Item[] = products.map((product) => ({
@@ -152,6 +169,25 @@ export default function DashboardPage() {
           status: distribution.status === "completed" ? "Completed" : "Pending",
         }));
 
+        const mappedEmployees: Employee[] = (empRecords ?? []).map((emp) => ({
+          id: emp.id,
+          name: emp.name,
+          hireDate: emp.hire_date,
+          role: emp.role as WorkRole,
+          baseSalary: Number(emp.base_salary),
+          paidThisMonth: 0,
+          status: (emp.status as "active" | "inactive") ?? "active",
+          notes: emp.notes ?? "",
+          history: (emp.salary_transactions ?? []).map((st) => ({
+            id: st.id,
+            date: st.date,
+            type: st.type as SalaryTransaction["type"],
+            amount: Number(st.amount),
+            note: st.note ?? "",
+          })),
+        }));
+        setEmployees(mappedEmployees);
+
         setItems(mappedItems);
         setStockHistory(mappedStockHistory);
         setTransactions(mappedTransactions);
@@ -162,14 +198,21 @@ export default function DashboardPage() {
       }
     };
 
-    void loadProfile();
-    void loadData();
+    const init = async () => {
+      await loadProfile();
+      await loadData();
+    };
+    void init();
   }, [router]);
 
   const handleNavigate = (page: string) => {
     const nextPage = page as PageId;
 
     if (nextPage === "admin-panel" && !canAccessAdminPanel(role)) {
+      return;
+    }
+
+    if (nextPage === "hr-management" && !canAccessHRManagement(role)) {
       return;
     }
 
@@ -389,6 +432,193 @@ export default function DashboardPage() {
         return <CashierReports />;
       case "cashier-analytics":
         return <CashierAnalytics />;
+      case "hr-management":
+        return (
+          <HRManagement
+            employees={employees}
+            onAdd={async (empData) => {
+              try {
+                const created = await createEmployee({
+                  name: empData.name,
+                  hire_date: empData.hireDate,
+                  role: empData.role,
+                  base_salary: empData.baseSalary,
+                  notes: "",
+                  status: empData.status ?? "active",
+                });
+                const newEmp: Employee = {
+                  id: created.id,
+                  name: created.name,
+                  hireDate: created.hire_date,
+                  role: created.role as WorkRole,
+                  baseSalary: Number(created.base_salary),
+                  paidThisMonth: 0,
+                  status: (created.status as "active" | "inactive") ?? "active",
+                  notes: created.notes ?? "",
+                  history: [],
+                };
+                setEmployees((prev) => [newEmp, ...prev]);
+              } catch (err) {
+                console.error("Database add employee fallback to local state:", err);
+                const fallbackEmp: Employee = {
+                  id:
+                    typeof crypto !== "undefined" && crypto.randomUUID
+                      ? crypto.randomUUID()
+                      : `e0000000-0000-4000-8000-${Date.now().toString(16).padStart(12, "0")}`,
+                  name: empData.name,
+                  hireDate: empData.hireDate,
+                  role: empData.role,
+                  baseSalary: empData.baseSalary,
+                  paidThisMonth: 0,
+                  status: empData.status ?? "active",
+                  notes: "",
+                  history: [],
+                };
+                setEmployees((prev) => [fallbackEmp, ...prev]);
+              }
+            }}
+            onUpdate={async (updatedEmp) => {
+              try {
+                await updateEmployee(updatedEmp.id, {
+                  name: updatedEmp.name,
+                  hire_date: updatedEmp.hireDate,
+                  role: updatedEmp.role,
+                  base_salary: updatedEmp.baseSalary,
+                  notes: updatedEmp.notes,
+                  status: updatedEmp.status,
+                });
+              } catch (err) {
+                console.error("Database update employee error:", err);
+              }
+              setEmployees((prev) =>
+                prev.map((e) => (e.id === updatedEmp.id ? updatedEmp : e)),
+              );
+            }}
+            onDelete={async (id) => {
+              try {
+                await deleteEmployee(id);
+              } catch (err) {
+                console.error("Database delete employee error:", err);
+              }
+              setEmployees((prev) => prev.filter((e) => e.id !== id));
+            }}
+            onSalaryAction={async (empId, action) => {
+              const isUUID = (str: string) =>
+                /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+                  str,
+                );
+
+              let targetEmpId = empId;
+              let emp = employees.find((e) => e.id === empId);
+
+              if (!isUUID(targetEmpId)) {
+                const dbMatch = employees.find(
+                  (e) =>
+                    isUUID(e.id) &&
+                    (e.id === empId || (emp && e.name === emp.name)),
+                );
+                if (dbMatch) {
+                  targetEmpId = dbMatch.id;
+                  emp = dbMatch;
+                } else if (emp) {
+                  try {
+                    const created = await createEmployee({
+                      name: emp.name,
+                      hire_date: emp.hireDate,
+                      role: emp.role,
+                      base_salary: emp.baseSalary,
+                      notes: emp.notes ?? "",
+                    });
+                    targetEmpId = created.id;
+                  } catch (err) {
+                    console.error(
+                      "Failed to auto-sync employee before salary transaction:",
+                      err,
+                    );
+                  }
+                }
+              }
+
+              try {
+                if (!isUUID(targetEmpId)) {
+                  throw new Error(`Invalid employee UUID: ${targetEmpId}`);
+                }
+
+                const createdTxn = await createSalaryTransaction({
+                  employee_id: targetEmpId,
+                  date: action.date,
+                  type: action.type,
+                  amount: action.amount,
+                  note: action.note,
+                });
+
+                const emp = employees.find(
+                  (e) => e.id === empId || e.id === targetEmpId,
+                );
+                if (emp && action.type === "increase") {
+                  await updateEmployee(targetEmpId, {
+                    base_salary: emp.baseSalary + action.amount,
+                  });
+                }
+
+                setEmployees((prev) =>
+                  prev.map((e) => {
+                    if (e.id !== empId && e.id !== targetEmpId) return e;
+                    const newHistory: SalaryTransaction = {
+                      id: createdTxn.id,
+                      date: createdTxn.date,
+                      type: createdTxn.type,
+                      amount: Number(createdTxn.amount),
+                      note: createdTxn.note ?? "",
+                    };
+                    return {
+                      ...e,
+                      id: targetEmpId,
+                      baseSalary:
+                        action.type === "increase"
+                          ? e.baseSalary + action.amount
+                          : e.baseSalary,
+                      paidThisMonth:
+                        action.type === "payment"
+                          ? e.paidThisMonth + action.amount
+                          : e.paidThisMonth,
+                      history: [newHistory, ...(e.history || [])],
+                    };
+                  }),
+                );
+              } catch (err) {
+                console.error("Database salary transaction error:", err);
+                setEmployees((prev) =>
+                  prev.map((e) => {
+                    if (e.id !== empId && e.id !== targetEmpId) return e;
+                    const fallbackHistory: SalaryTransaction = {
+                      id:
+                        typeof crypto !== "undefined" && crypto.randomUUID
+                          ? crypto.randomUUID()
+                          : `a0000000-0000-4000-8000-${Date.now().toString(16).padStart(12, "0")}`,
+                      date: action.date,
+                      type: action.type,
+                      amount: action.amount,
+                      note: action.note,
+                    };
+                    return {
+                      ...e,
+                      baseSalary:
+                        action.type === "increase"
+                          ? e.baseSalary + action.amount
+                          : e.baseSalary,
+                      paidThisMonth:
+                        action.type === "payment"
+                          ? e.paidThisMonth + action.amount
+                          : e.paidThisMonth,
+                      history: [fallbackHistory, ...(e.history || [])],
+                    };
+                  }),
+                );
+              }
+            }}
+          />
+        );
       case "admin-panel":
         return (
           <AdminPanel role={role} onClose={() => setCurrentPage("dashboard")} />

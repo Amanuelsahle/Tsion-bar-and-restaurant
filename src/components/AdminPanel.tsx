@@ -272,7 +272,7 @@ export default function AdminPanel({ role, onClose }: AdminPanelProps) {
             onChange={(event) =>
               setForm((prev) => ({ ...prev, email: event.target.value }))
             }
-            className="w-full rounded-xl border border-[#2b3246] bg-[#0f1420] px-4 py-3 text-sm text-[#f5efe7] outline-none focus:border-[#c9a84c]"
+            className="w-full rounded-xl border border-[#2b3246] bg-[#0f1420] px-4 py-3 text-base md:text-sm text-[#f5efe7] outline-none focus:border-[#c9a84c]"
             placeholder="staff@tsion.com"
           />
         </div>
@@ -287,7 +287,7 @@ export default function AdminPanel({ role, onClose }: AdminPanelProps) {
             onChange={(event) =>
               setForm((prev) => ({ ...prev, password: event.target.value }))
             }
-            className="w-full rounded-xl border border-[#2b3246] bg-[#0f1420] px-4 py-3 text-sm text-[#f5efe7] outline-none focus:border-[#c9a84c]"
+            className="w-full rounded-xl border border-[#2b3246] bg-[#0f1420] px-4 py-3 text-base md:text-sm text-[#f5efe7] outline-none focus:border-[#c9a84c]"
             placeholder="Create a temporary password"
           />
         </div>

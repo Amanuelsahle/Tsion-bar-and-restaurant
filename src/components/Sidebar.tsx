@@ -70,6 +70,19 @@ const navGroups: NavGroup[] = [
       { id: "cashier-analytics", label: "Reports", icon: "📊" },
     ],
   },
+  {
+    key: "hr",
+    label: "HR Management",
+    icon: "👥",
+    items: [
+      {
+        id: "hr-management",
+        label: "HR Management",
+        icon: "👥",
+        roleAccess: ["super_admin"],
+      },
+    ],
+  },
 ];
 
 export default function Sidebar({
@@ -81,18 +94,20 @@ export default function Sidebar({
   mobileOpen = false,
   onCloseMobile,
 }: SidebarProps) {
-  const [expandedGroup, setExpandedGroup] = useState("store-bar");
+  const [expandedGroup, setExpandedGroup] = useState("");
 
-  const filteredGroups = navGroups.map((group) => ({
-    ...group,
-    items: group.items.filter((item) => {
-      if (!item.roleAccess) {
-        return true;
-      }
+  const filteredGroups = navGroups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => {
+        if (!item.roleAccess) {
+          return true;
+        }
 
-      return item.roleAccess.includes(role);
-    }),
-  }));
+        return item.roleAccess.includes(role);
+      }),
+    }))
+    .filter((group) => group.items.length > 0);
 
   const toggleGroup = (groupKey: string) => {
     setExpandedGroup((prev) => (prev === groupKey ? "" : groupKey));
@@ -293,8 +308,8 @@ export default function Sidebar({
               className="w-full flex items-center justify-center p-2 rounded-lg text-xs transition-colors"
               style={{ color: "var(--muted-foreground)" }}
               onMouseEnter={(e) =>
-                (e.currentTarget.style.backgroundColor =
-                  "rgba(255,255,255,0.05)")
+              (e.currentTarget.style.backgroundColor =
+                "rgba(255,255,255,0.05)")
               }
               onMouseLeave={(e) =>
                 (e.currentTarget.style.backgroundColor = "transparent")

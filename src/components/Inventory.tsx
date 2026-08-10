@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Item, Category } from "../lib/mockData";
+import type { Item, Category } from "../lib/types";
 
 interface InventoryProps {
   items: Item[];
