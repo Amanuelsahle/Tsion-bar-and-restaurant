@@ -18,9 +18,10 @@ export default function AddEmployeeModal({
   onClose,
   onAdd,
 }: AddEmployeeModalProps) {
+  const today = new Date().toISOString().split("T")[0];
   const [addForm, setAddForm] = useState({
     name: "",
-    hireDate: new Date().toISOString().split("T")[0],
+    hireDate: today,
     role: "Waiter" as WorkRole,
     baseSalary: 5000,
   });
@@ -28,7 +29,13 @@ export default function AddEmployeeModal({
   if (!show) return null;
 
   async function handleSubmit() {
-    if (!addForm.name || addForm.baseSalary <= 0 || isSubmitting) return;
+    if (
+      !addForm.name ||
+      addForm.baseSalary <= 0 ||
+      addForm.hireDate > today ||
+      isSubmitting
+    )
+      return;
     await onAdd({
       name: addForm.name,
       hireDate: addForm.hireDate,
@@ -37,7 +44,7 @@ export default function AddEmployeeModal({
     });
     setAddForm({
       name: "",
-      hireDate: new Date().toISOString().split("T")[0],
+      hireDate: today,
       role: "Waiter",
       baseSalary: 5000,
     });
@@ -106,10 +113,13 @@ export default function AddEmployeeModal({
               </label>
               <input
                 type="date"
+                max={today}
                 value={addForm.hireDate}
-                onChange={(e) =>
-                  setAddForm({ ...addForm, hireDate: e.target.value })
-                }
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val && val > today) return;
+                  setAddForm({ ...addForm, hireDate: val });
+                }}
                 className="w-full px-4 py-2.5 rounded-xl text-base md:text-sm outline-none"
                 style={{
                   backgroundColor: "var(--secondary)",
@@ -188,7 +198,12 @@ export default function AddEmployeeModal({
           <button
             type="button"
             onClick={handleSubmit}
-            disabled={!addForm.name || addForm.baseSalary <= 0 || isSubmitting}
+            disabled={
+              !addForm.name ||
+              addForm.baseSalary <= 0 ||
+              addForm.hireDate > today ||
+              isSubmitting
+            }
             className="px-5 py-2.5 rounded-xl text-sm font-semibold"
             style={{
               background: "linear-gradient(135deg, #c9a84c, #a07828)",
