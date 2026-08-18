@@ -6,8 +6,10 @@ import {
   getBonoOrder,
   getBonos,
   getCashierSetting,
+  getEmployees,
   updateCashierSetting,
   type BonoRecord,
+  type EmployeeRecord,
 } from "../lib/supabase-data";
 
 interface CheckoutInputs {
@@ -33,16 +35,33 @@ export default function CashierCheckout() {
   const [otherMoney2, setOtherMoney2] = useState("");
   const [todayMoney, setTodayMoney] = useState("");
   const [todayTickets, setTodayTickets] = useState("");
-  const [cashierName, setCashierName] = useState("Almaz");
+  const [cashierName, setCashierName] = useState("");
+  const [cashiers, setCashiers] = useState<EmployeeRecord[]>([]);
   const [isFastingDay, setIsFastingDay] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [bonoData, savedInitialMoney] = await Promise.all([
+        const [bonoData, savedInitialMoney, employeeData] = await Promise.all([
           getBonos(),
           getCashierSetting("initial_money"),
+          getEmployees(),
         ]);
+
+        const cashierEmps = employeeData.filter(
+          (emp) =>
+            emp.role?.toLowerCase() === "cashier" && emp.status !== "inactive",
+        );
+        const availableCashiers =
+          cashierEmps.length > 0
+            ? cashierEmps
+            : employeeData.filter((emp) => emp.role?.toLowerCase() === "cashier");
+        const finalCashiers =
+          availableCashiers.length > 0
+            ? availableCashiers
+            : employeeData.filter((emp) => emp.status !== "inactive");
+
+        setCashiers(finalCashiers.length > 0 ? finalCashiers : employeeData);
 
         const activeBonos = bonoData.filter((bono) => bono.is_active);
         const orderedIds = await getBonoOrder();
@@ -177,8 +196,13 @@ export default function CashierCheckout() {
   };
 
   const handleSubmit = async () => {
+    if (!cashierName || cashierName.trim() === "") {
+      setMessage("Please select a cashier before submitting.");
+      return;
+    }
+
     const confirmed = window.confirm(
-      "Are you sure you want to submit this cashier checkout?",
+      `Are you sure you want to submit this cashier checkout for ${cashierName}?`,
     );
 
     if (!confirmed) {
@@ -216,6 +240,7 @@ export default function CashierCheckout() {
 
       await createCashierReport(report);
       setMessage("Checkout saved successfully.");
+      setCashierName("");
       setSpecialPayouts("");
       setOtherMoney1("");
       setOtherMoney2("");
@@ -299,8 +324,12 @@ export default function CashierCheckout() {
               color: "var(--foreground)",
             }}
           >
-            <option value="Almaz">Almaz</option>
-            <option value="Beza">Beza</option>
+            <option value="">-- Select Cashier --</option>
+            {cashiers.map((cashier) => (
+              <option key={cashier.id} value={cashier.name}>
+                {cashier.name}
+              </option>
+            ))}
           </select>
         </div>
         <div
