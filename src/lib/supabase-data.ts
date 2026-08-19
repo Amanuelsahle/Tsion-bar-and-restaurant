@@ -894,3 +894,212 @@ export async function createSalaryTransaction(
   return data as SalaryTransactionRecord;
 }
 
+/* ==========================================================================
+   BAR ITEMS & NIGHT BAR SALES Persistence (Direct Supabase Database Storage)
+   ========================================================================== */
+
+export type BarItemRecord = {
+  id: string;
+  name: string;
+  unit_price: number;
+  category?: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type BarNightSaleItemRecord = {
+  id: string;
+  night_sale_id?: string;
+  item_id?: string;
+  item_name: string;
+  unit_price: number;
+  quantity: number;
+  total_price: number;
+  created_at?: string;
+};
+
+export type BarNightSaleRecord = {
+  id: string;
+  sale_date: string;
+  shift_name?: string;
+  grand_total: number;
+  notes?: string;
+  created_by?: string;
+  created_at: string;
+  items?: BarNightSaleItemRecord[];
+};
+
+export async function getBarItems(): Promise<BarItemRecord[]> {
+  if (!supabase) throw new Error("Supabase client is not configured");
+
+  const { data, error } = await supabase
+    .from("bar_items")
+    .select("*")
+    .order("name", { ascending: true });
+
+  if (error) throw error;
+
+  return (data ?? []).map((item) => ({
+    ...item,
+    unit_price: Number(item.unit_price),
+  })) as BarItemRecord[];
+}
+
+export async function createBarItem(
+  item: Omit<BarItemRecord, "id" | "created_at" | "updated_at">
+): Promise<BarItemRecord> {
+  if (!supabase) throw new Error("Supabase client is not configured");
+
+  const { data, error } = await supabase
+    .from("bar_items")
+    .insert({
+      name: item.name,
+      unit_price: item.unit_price,
+      category: item.category ?? "bar",
+    })
+    .select("*")
+    .single();
+
+  if (error) throw error;
+
+  return {
+    ...(data as BarItemRecord),
+    unit_price: Number(data.unit_price),
+  };
+}
+
+export async function updateBarItem(
+  id: string,
+  updates: Partial<Omit<BarItemRecord, "id" | "created_at" | "updated_at">>
+): Promise<BarItemRecord> {
+  if (!supabase) throw new Error("Supabase client is not configured");
+
+  const { data, error } = await supabase
+    .from("bar_items")
+    .update({
+      ...updates,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id)
+    .select("*")
+    .single();
+
+  if (error) throw error;
+
+  return {
+    ...(data as BarItemRecord),
+    unit_price: Number(data.unit_price),
+  };
+}
+
+export async function deleteBarItem(id: string): Promise<void> {
+  if (!supabase) throw new Error("Supabase client is not configured");
+
+  const { error } = await supabase.from("bar_items").delete().eq("id", id);
+  if (error) throw error;
+}
+
+export async function getBarNightSales(): Promise<BarNightSaleRecord[]> {
+  if (!supabase) throw new Error("Supabase client is not configured");
+
+  const { data, error } = await supabase
+    .from("bar_night_sales")
+    .select("*, bar_night_sale_items(*)")
+    .order("sale_date", { ascending: false })
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+
+  return (data ?? []).map((sale) => ({
+    id: sale.id,
+    sale_date: sale.sale_date,
+    shift_name: sale.shift_name ?? "Night Shift",
+    grand_total: Number(sale.grand_total),
+    notes: sale.notes ?? "",
+    created_by: sale.created_by,
+    created_at: sale.created_at,
+    items: (sale.bar_night_sale_items ?? []).map((item: any) => ({
+      id: item.id,
+      night_sale_id: item.night_sale_id,
+      item_id: item.item_id,
+      item_name: item.item_name,
+      unit_price: Number(item.unit_price),
+      quantity: Number(item.quantity),
+      total_price: Number(item.total_price),
+      created_at: item.created_at,
+    })),
+  }));
+}
+
+export async function createBarNightSale(
+  sale: Omit<BarNightSaleRecord, "id" | "created_at">,
+  items: Array<Omit<BarNightSaleItemRecord, "id" | "night_sale_id" | "created_at">>
+): Promise<BarNightSaleRecord> {
+  if (!supabase) throw new Error("Supabase client is not configured");
+
+  const { data: saleData, error: saleError } = await supabase
+    .from("bar_night_sales")
+    .insert({
+      sale_date: sale.sale_date,
+      shift_name: sale.shift_name ?? "Night Shift",
+      grand_total: sale.grand_total,
+      notes: sale.notes ?? "",
+    })
+    .select("*")
+    .single();
+
+  if (saleError) throw saleError;
+
+  const itemRows = items.map((item) => ({
+    night_sale_id: saleData.id,
+    item_id: item.item_id || null,
+    item_name: item.item_name,
+    unit_price: item.unit_price,
+    quantity: item.quantity,
+    total_price: item.total_price,
+  }));
+
+  let savedItems: BarNightSaleItemRecord[] = [];
+  if (itemRows.length > 0) {
+    const { data: itemsData, error: itemsError } = await supabase
+      .from("bar_night_sale_items")
+      .insert(itemRows)
+      .select("*");
+
+    if (itemsError) throw itemsError;
+
+    if (itemsData) {
+      savedItems = itemsData.map((item) => ({
+        id: item.id,
+        night_sale_id: item.night_sale_id,
+        item_id: item.item_id,
+        item_name: item.item_name,
+        unit_price: Number(item.unit_price),
+        quantity: Number(item.quantity),
+        total_price: Number(item.total_price),
+        created_at: item.created_at,
+      }));
+    }
+  }
+
+  return {
+    id: saleData.id,
+    sale_date: saleData.sale_date,
+    shift_name: saleData.shift_name,
+    grand_total: Number(saleData.grand_total),
+    notes: saleData.notes,
+    created_by: saleData.created_by,
+    created_at: saleData.created_at,
+    items: savedItems,
+  };
+}
+
+export async function deleteBarNightSale(id: string): Promise<void> {
+  if (!supabase) throw new Error("Supabase client is not configured");
+
+  const { error } = await supabase.from("bar_night_sales").delete().eq("id", id);
+  if (error) throw error;
+}
+
+
+

@@ -9,6 +9,7 @@ import Inventory from "../../components/Inventory";
 import ItemManagement from "../../components/ItemManagement";
 import StoreManagement from "../../components/StoreManagement";
 import GiveToBar from "../../components/GiveToBar";
+import NightBarSales from "../../components/NightBarSales";
 import DistributionHistory from "../../components/DistributionHistory";
 import Reports from "../../components/Reports";
 import BonoManagement from "../../components/BonoManagement";
@@ -58,6 +59,7 @@ type PageId =
   | "items"
   | "store"
   | "give-to-bar"
+  | "night-bar-sales"
   | "history"
   | "inventory"
   | "reports"
@@ -416,6 +418,8 @@ export default function DashboardPage() {
         );
       case "give-to-bar":
         return <GiveToBar items={items} onSave={handleAddTransaction} />;
+      case "night-bar-sales":
+        return <NightBarSales />;
       case "history":
         return (
           <DistributionHistory transactions={transactions} items={items} />

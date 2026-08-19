@@ -381,7 +381,7 @@ export default function DistributionHistory({
           }}
         >
           <option value="">All Bar Managers</option>
-          {["Bar Manager", "Assistant Manager", ...BAR_MANAGERS].map((bm) => (
+          {Array.from(new Set(["Bar Manager", ...BAR_MANAGERS])).map((bm) => (
             <option key={bm} value={bm}>
               {bm}
             </option>
