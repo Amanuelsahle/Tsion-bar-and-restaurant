@@ -9,9 +9,9 @@ import {
   Line,
   CartesianGrid,
 } from "recharts";
-import type { Item, Transaction } from "../lib/types";
+import type { Item, Transaction } from "../../lib/types";
 
-import type { UserRole } from "../lib/roles";
+import type { UserRole } from "../../lib/roles";
 
 interface DashboardProps {
   items: Item[];

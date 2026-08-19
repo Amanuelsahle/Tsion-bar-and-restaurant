@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Item, StockHistory } from "../lib/types";
+import type { Item, StockHistory } from "../../lib/types";
 
 interface StoreManagementProps {
   items: Item[];

@@ -11,8 +11,8 @@ import {
   updateBarItem,
   type BarItemRecord,
   type BarNightSaleRecord,
-} from "../lib/supabase-data";
-import { openReceiptWindow } from "../lib/receipt";
+} from "../../lib/supabase-data";
+import { openReceiptWindow } from "../../lib/receipt";
 
 interface CalculationRow {
   id: string;
@@ -646,9 +646,6 @@ export default function NightBarSales() {
                       Date
                     </th>
                     <th className="px-4 py-3.5 text-left text-xs font-medium uppercase tracking-wider text-[#7a8090]">
-                      Shift
-                    </th>
-                    <th className="px-4 py-3.5 text-left text-xs font-medium uppercase tracking-wider text-[#7a8090]">
                       Items Count
                     </th>
                     <th className="px-4 py-3.5 text-left text-xs font-medium uppercase tracking-wider text-[#7a8090]">
@@ -669,39 +666,43 @@ export default function NightBarSales() {
                       <td className="px-4 py-3.5 font-medium text-[#f4efe7]">
                         {record.sale_date}
                       </td>
-                      <td className="px-4 py-3.5 text-[#7a8090]">
-                        {record.shift_name ?? "Night Shift"}
-                      </td>
                       <td className="px-4 py-3.5 text-[#e8e6e1]">
                         {record.items?.length ?? 0} item(s)
                       </td>
                       <td className="px-4 py-3.5 font-semibold text-[#c9a84c]">
                         {record.grand_total.toLocaleString()} Birr
                       </td>
-                      <td className="px-4 py-3.5 text-right space-x-2">
-                        <button
-                          onClick={() => setSelectedSaleDetail(record)}
-                          className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
-                          style={{
-                            backgroundColor: "var(--secondary)",
-                            border: "1px solid var(--border)",
-                            color: "var(--foreground)",
-                          }}
-                        >
-                          👁 View Details
-                        </button>
-                        <button
-                          onClick={() => handlePrintRecord(record)}
-                          className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-[#c9a84c]/20 text-[#c9a84c] border border-[#c9a84c]/30 hover:bg-[#c9a84c]/30"
-                        >
-                          🖨 Print Report
-                        </button>
-                        <button
-                          onClick={() => handleDeleteHistoryRecord(record.id)}
-                          className="px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all text-red-400 hover:bg-red-500/10 border border-red-500/20"
-                        >
-                          🗑
-                        </button>
+                      <td className="px-2 py-3.5 sm:px-4 text-right whitespace-nowrap">
+                        <div className="inline-flex items-center justify-end gap-1.5 sm:gap-2">
+                          <button
+                            onClick={() => setSelectedSaleDetail(record)}
+                            title="View Details"
+                            className="px-2.5 py-1.5 sm:px-3 rounded-lg text-xs font-medium transition-all flex items-center gap-1"
+                            style={{
+                              backgroundColor: "var(--secondary)",
+                              border: "1px solid var(--border)",
+                              color: "var(--foreground)",
+                            }}
+                          >
+                            <span>👁</span>
+                            <span className="hidden sm:inline">View Details</span>
+                          </button>
+                          <button
+                            onClick={() => handlePrintRecord(record)}
+                            title="Print Report"
+                            className="px-2.5 py-1.5 sm:px-3 rounded-lg text-xs font-medium transition-all bg-[#c9a84c]/20 text-[#c9a84c] border border-[#c9a84c]/30 hover:bg-[#c9a84c]/30 flex items-center gap-1"
+                          >
+                            <span>🖨</span>
+                            <span className="hidden sm:inline">Print Report</span>
+                          </button>
+                          <button
+                            onClick={() => handleDeleteHistoryRecord(record.id)}
+                            title="Delete Record"
+                            className="px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all text-red-400 hover:bg-red-500/10 border border-red-500/20"
+                          >
+                            🗑
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

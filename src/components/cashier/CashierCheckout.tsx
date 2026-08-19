@@ -10,7 +10,7 @@ import {
   updateCashierSetting,
   type BonoRecord,
   type EmployeeRecord,
-} from "../lib/supabase-data";
+} from "../../lib/supabase-data";
 
 interface CheckoutInputs {
   [bonoId: string]: {

@@ -11,7 +11,7 @@ import {
   updateBono,
   updateCashierSetting,
   type BonoRecord,
-} from "../lib/supabase-data";
+} from "../../lib/supabase-data";
 
 interface BonoFormState {
   name: string;
@@ -40,7 +40,6 @@ export default function BonoManagement() {
   const [initialMoney, setInitialMoney] = useState(5000);
   const [editingInitialMoney, setEditingInitialMoney] = useState(false);
   const [initialMoneyInput, setInitialMoneyInput] = useState("5000");
-  const [reordering, setReordering] = useState(false);
 
   const loadBonos = async () => {
     try {
