@@ -31,11 +31,19 @@ type NavGroup = {
 
 const navGroups: NavGroup[] = [
   {
+    key: "overview",
+    label: "Overview",
+    icon: "🏛",
+    items: [
+      { id: "dashboard", label: "System Overview", icon: "🏛" },
+    ],
+  },
+  {
     key: "store-bar",
     label: "Store & Bar",
     icon: "▣",
     items: [
-      { id: "dashboard", label: "Dashboard", icon: "⊞" },
+      { id: "store-bar-dashboard", label: "Store & Bar Dashboard", icon: "⊞" },
       {
         id: "items",
         label: "Item Management",
@@ -181,7 +189,10 @@ export default function Sidebar({
           </div>
 
           {/* Nav */}
-          <nav className="flex-1 py-4 overflow-y-auto scrollbar-hide">
+          <nav
+            className="flex-1 py-4 overflow-y-auto scrollbar-hide no-scrollbar"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          >
             <ul className="space-y-1.5 px-2">
               {filteredGroups.map((group) => {
                 const activeGroup = group.items.some(

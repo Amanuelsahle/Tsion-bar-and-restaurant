@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "../../components/Navbar";
 import Sidebar from "../../components/Sidebar";
+import SystemOverview from "../../components/SystemOverview";
 import Dashboard from "../../components/store-bar/Dashhboard";
 import Inventory from "../../components/store-bar/Inventory";
 import ItemManagement from "../../components/store-bar/ItemManagement";
@@ -25,12 +26,18 @@ import {
   createStockMovement,
   deleteEmployee,
   deleteProduct,
+  getBarNightSales,
+  getBonos,
+  getCashierReports,
   getDistributions,
   getEmployees,
   getProducts,
   getStockMovements,
   updateEmployee,
   updateProduct,
+  type BarNightSaleRecord,
+  type BonoRecord,
+  type CashierReportRecord,
   type DistributionRecord,
   type ProductRecord,
   type StockMovementRecord,
@@ -56,6 +63,7 @@ import {
 
 type PageId =
   | "dashboard"
+  | "store-bar-dashboard"
   | "items"
   | "store"
   | "give-to-bar"
@@ -81,6 +89,9 @@ export default function DashboardPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [stockHistory, setStockHistory] = useState<StockHistory[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [cashierReports, setCashierReports] = useState<CashierReportRecord[]>([]);
+  const [bonos, setBonos] = useState<BonoRecord[]>([]);
+  const [nightSales, setNightSales] = useState<BarNightSaleRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -127,12 +138,27 @@ export default function DashboardPage() {
 
     const loadData = async () => {
       try {
-        const [products, stockMoves, dists, empRecords] = await Promise.all([
+        const [
+          products,
+          stockMoves,
+          dists,
+          empRecords,
+          cashierReportsData,
+          bonosData,
+          nightSalesData,
+        ] = await Promise.all([
           getProducts(),
           getStockMovements(),
           getDistributions(),
           getEmployees(),
+          getCashierReports(),
+          getBonos(),
+          getBarNightSales(),
         ]);
+
+        setCashierReports(cashierReportsData ?? []);
+        setBonos(bonosData ?? []);
+        setNightSales(nightSalesData ?? []);
 
         const mappedItems: Item[] = products.map((product) => ({
           id: product.id,
@@ -629,13 +655,26 @@ export default function DashboardPage() {
         );
       case "cashier":
         return <BonoManagement />;
-      default:
+      case "store-bar-dashboard":
         return (
           <Dashboard
             items={items}
             transactions={transactions}
             onNavigate={handleNavigate}
             role={role}
+          />
+        );
+      default:
+        return (
+          <SystemOverview
+            items={items}
+            transactions={transactions}
+            employees={employees}
+            cashierReports={cashierReports}
+            bonos={bonos}
+            nightSales={nightSales}
+            role={role}
+            onNavigate={handleNavigate}
           />
         );
     }

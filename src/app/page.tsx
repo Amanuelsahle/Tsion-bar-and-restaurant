@@ -14,8 +14,19 @@ export default function Home() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [mode, setMode] = useState<"sign-in" | "sign-up">("sign-in");
+  const [mode, setMode] = useState<"sign-in" | "forgot-password">("sign-in");
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [lockoutSeconds, setLockoutSeconds] = useState(0);
+
+  useEffect(() => {
+    if (lockoutSeconds <= 0) return;
+    const timer = setInterval(() => {
+      setLockoutSeconds((prev) => (prev <= 1 ? 0 : prev - 1));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [lockoutSeconds]);
 
   const syncProfileRole = async (userEmail?: string | null) => {
     if (!supabase) {
@@ -68,7 +79,7 @@ export default function Home() {
 
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        if (session) {
+        if (session && mode === "sign-in") {
           void syncProfileRole(session.user?.email);
           router.replace("/dashboard");
         }
@@ -76,12 +87,19 @@ export default function Home() {
     );
 
     return () => authListener.subscription.unsubscribe();
-  }, [router]);
+  }, [router, mode]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (lockoutSeconds > 0) {
+      setError(`Too many failed attempts. Please wait ${lockoutSeconds} seconds.`);
+      return;
+    }
+
     setLoading(true);
     setError("");
+    setSuccessMessage("");
 
     try {
       if (!supabase) {
@@ -90,9 +108,24 @@ export default function Home() {
         );
       }
 
-      if (mode === "sign-up") {
-        setError(
-          "Sign-up is disabled for the public. Please sign in with your assigned account.",
+      if (mode === "forgot-password") {
+        const { error: resetError } = await supabase.auth.resetPasswordForEmail(
+          email.trim(),
+          {
+            redirectTo: `${window.location.origin}/auth/reset-password`,
+          },
+        );
+
+        if (resetError) {
+          if (resetError.status === 429 || resetError.message.includes("rate")) {
+            setLockoutSeconds(60);
+            throw new Error("Rate limit exceeded. Please wait 60 seconds before requesting another reset.");
+          }
+          throw resetError;
+        }
+
+        setSuccessMessage(
+          "Password reset link has been sent to your email. Please check your inbox and follow the instructions.",
         );
         return;
       }
@@ -101,11 +134,32 @@ export default function Home() {
         email,
         password,
       });
-      if (signInError) throw signInError;
+
+      if (signInError) {
+        if (signInError.status === 429 || signInError.message.includes("rate")) {
+          setLockoutSeconds(60);
+          throw new Error("Rate limit exceeded. Too many requests. Please wait 60 seconds.");
+        }
+        throw signInError;
+      }
+
+      setFailedAttempts(0);
       await syncProfileRole(email);
       router.replace("/dashboard");
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Authentication failed.");
+      if (mode === "sign-in") {
+        const newFailCount = failedAttempts + 1;
+        setFailedAttempts(newFailCount);
+
+        if (newFailCount >= 5) {
+          setLockoutSeconds(30);
+          setError("Too many consecutive failed login attempts. Temporarily locked for 30 seconds.");
+        } else {
+          setError(err instanceof Error ? err.message : "Authentication failed.");
+        }
+      } else {
+        setError(err instanceof Error ? err.message : "Failed to send reset link.");
+      }
     } finally {
       setLoading(false);
     }
@@ -185,17 +239,21 @@ export default function Home() {
 
           <div>
             <h2 className="text-2xl font-semibold text-[#f4efe7]">
-              Welcome back
+              {mode === "forgot-password" ? "Reset Password" : "Welcome back"}
             </h2>
             <p className="mt-1 text-sm text-[#7a8090]">
-              Sign in to your assigned account to continue
+              {mode === "forgot-password"
+                ? "Enter your account email to receive a password reset link."
+                : "Sign in to your assigned account to continue"}
             </p>
           </div>
 
-          <div className="rounded-xl border border-[#252b3b] bg-[#1e2435] p-4 text-sm text-[#8c94a8]">
-            Only invited staff members can sign in. The super admin creates new
-            accounts and sends the verification email.
-          </div>
+          {mode === "sign-in" && (
+            <div className="rounded-xl border border-[#252b3b] bg-[#1e2435] p-4 text-sm text-[#8c94a8]">
+              Only invited staff members can sign in. The super admin creates new
+              accounts and manages staff roles.
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
@@ -206,42 +264,86 @@ export default function Home() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter email"
+                placeholder="Enter account email"
                 required
                 className="w-full rounded-xl border border-[#252b3b] bg-[#1e2435] px-4 py-3 text-sm text-[#e8e6e1] outline-none transition-all focus:border-[#c9a84c]"
               />
             </div>
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium text-[#7a8090]">
-                Password
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter password"
-                required
-                className="w-full rounded-xl border border-[#252b3b] bg-[#1e2435] px-4 py-3 text-sm text-[#e8e6e1] outline-none transition-all focus:border-[#c9a84c]"
-              />
-            </div>
+
+            {mode === "sign-in" && (
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-medium text-[#7a8090]">
+                    Password
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode("forgot-password");
+                      setError("");
+                      setSuccessMessage("");
+                    }}
+                    className="text-xs text-[#c9a84c] hover:underline"
+                  >
+                    Forgot password?
+                  </button>
+                </div>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter password"
+                  required
+                  className="w-full rounded-xl border border-[#252b3b] bg-[#1e2435] px-4 py-3 text-sm text-[#e8e6e1] outline-none transition-all focus:border-[#c9a84c]"
+                />
+              </div>
+            )}
+
             {error ? (
               <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">
                 {error}
               </div>
             ) : null}
+
+            {successMessage ? (
+              <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300">
+                {successMessage}
+              </div>
+            ) : null}
+
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || lockoutSeconds > 0}
               className="w-full rounded-xl py-3 text-sm font-semibold transition-all disabled:opacity-70"
               style={{
-                background: loading
+                background: loading || lockoutSeconds > 0
                   ? "#1e2435"
                   : "linear-gradient(135deg, #c9a84c, #a07828)",
-                color: "#0f1117",
+                color: loading || lockoutSeconds > 0 ? "#7a8090" : "#0f1117",
               }}
             >
-              {loading ? "Signing in..." : "Sign In"}
+              {loading
+                ? "Processing..."
+                : lockoutSeconds > 0
+                  ? `Locked (${lockoutSeconds}s)`
+                  : mode === "forgot-password"
+                    ? "Send Reset Link"
+                    : "Sign In"}
             </button>
+
+            {mode === "forgot-password" && (
+              <button
+                type="button"
+                onClick={() => {
+                  setMode("sign-in");
+                  setError("");
+                  setSuccessMessage("");
+                }}
+                className="w-full text-center text-xs text-[#7a8090] hover:text-[#e8e6e1] pt-2 block"
+              >
+                ← Back to Sign In
+              </button>
+            )}
           </form>
 
           <div className="rounded-xl border border-[#252b3b] bg-[#1e2435] p-4 space-y-2">
