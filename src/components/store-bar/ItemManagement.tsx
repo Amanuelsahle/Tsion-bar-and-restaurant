@@ -290,14 +290,14 @@ export default function ItemManagement({
       {/* Add/Edit Modal */}
       {showForm && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto"
           style={{
             backgroundColor: "rgba(0,0,0,0.6)",
             backdropFilter: "blur(4px)",
           }}
         >
           <div
-            className="w-full max-w-lg rounded-2xl p-6 space-y-5"
+            className="w-full max-w-lg max-h-[85vh] overflow-y-auto my-auto rounded-2xl p-6 space-y-5 shadow-2xl"
             style={{
               backgroundColor: "var(--card)",
               border: "1px solid var(--border)",
@@ -513,14 +513,14 @@ export default function ItemManagement({
       {/* Delete confirm */}
       {deleteId && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto"
           style={{
             backgroundColor: "rgba(0,0,0,0.6)",
             backdropFilter: "blur(4px)",
           }}
         >
           <div
-            className="w-full max-w-sm rounded-2xl p-6 space-y-4"
+            className="w-full max-w-sm max-h-[85vh] overflow-y-auto my-auto rounded-2xl p-6 space-y-4 shadow-2xl"
             style={{
               backgroundColor: "var(--card)",
               border: "1px solid var(--border)",

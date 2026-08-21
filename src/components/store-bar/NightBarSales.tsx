@@ -715,15 +715,16 @@ export default function NightBarSales() {
 
       {/* Catalog Management Modal */}
       {showCatalogModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto">
           <div
-            className="w-full max-w-xl rounded-2xl p-6 space-y-6 overflow-hidden shadow-2xl"
+            className="w-full max-w-xl max-h-[85vh] rounded-2xl p-6 flex flex-col overflow-hidden shadow-2xl my-auto"
             style={{
               backgroundColor: "#161a26",
               border: "1px solid var(--border)",
             }}
           >
-            <div className="flex items-center justify-between border-b pb-4" style={{ borderColor: "var(--border)" }}>
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b pb-4 shrink-0" style={{ borderColor: "var(--border)" }}>
               <div>
                 <h3 className="text-xl font-bold font-display text-[#f4efe7]">
                   📦 Bar Items Catalog
@@ -745,128 +746,132 @@ export default function NightBarSales() {
               </button>
             </div>
 
-            {/* Add / Edit Form */}
-            <form onSubmit={handleSaveCatalogItem} className="space-y-4 bg-white/[0.02] p-4 rounded-xl border border-white/5">
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-[#c9a84c]">
-                {editingItem ? "Edit Bar Item" : "+ Add New Item to Catalog"}
-              </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-xs text-[#7a8090]">Item Name</label>
-                  <input
-                    type="text"
-                    value={newItemName}
-                    onChange={(e) => setNewItemName(e.target.value)}
-                    placeholder="e.g. Beer, Soft Drink"
-                    required
-                    className="w-full px-3.5 py-2.5 rounded-xl text-base md:text-sm outline-none"
-                    style={{
-                      backgroundColor: "var(--secondary)",
-                      border: "1px solid var(--border)",
-                      color: "var(--foreground)",
-                    }}
-                  />
+            {/* Modal Body (No outer scroll) */}
+            <div className="space-y-4 py-3">
+              {/* Add / Edit Form */}
+              <form onSubmit={handleSaveCatalogItem} className="space-y-4 bg-white/[0.02] p-4 rounded-xl border border-white/5">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-[#c9a84c]">
+                  {editingItem ? "Edit Bar Item" : "+ Add New Item to Catalog"}
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-xs text-[#7a8090]">Item Name</label>
+                    <input
+                      type="text"
+                      value={newItemName}
+                      onChange={(e) => setNewItemName(e.target.value)}
+                      placeholder="e.g. Beer, Soft Drink"
+                      required
+                      className="w-full px-3.5 py-2.5 rounded-xl text-base md:text-sm outline-none"
+                      style={{
+                        backgroundColor: "var(--secondary)",
+                        border: "1px solid var(--border)",
+                        color: "var(--foreground)",
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs text-[#7a8090]">Price Per Unit (Birr)</label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={newItemPrice}
+                      onChange={(e) => setNewItemPrice(e.target.value)}
+                      placeholder="e.g. 100"
+                      required
+                      className="w-full px-3.5 py-2.5 rounded-xl text-base md:text-sm outline-none"
+                      style={{
+                        backgroundColor: "var(--secondary)",
+                        border: "1px solid var(--border)",
+                        color: "var(--foreground)",
+                      }}
+                    />
+                  </div>
                 </div>
-                <div className="space-y-1">
-                  <label className="text-xs text-[#7a8090]">Price Per Unit (Birr)</label>
-                  <input
-                    type="number"
-                    min={0}
-                    value={newItemPrice}
-                    onChange={(e) => setNewItemPrice(e.target.value)}
-                    placeholder="e.g. 100"
-                    required
-                    className="w-full px-3.5 py-2.5 rounded-xl text-base md:text-sm outline-none"
-                    style={{
-                      backgroundColor: "var(--secondary)",
-                      border: "1px solid var(--border)",
-                      color: "var(--foreground)",
-                    }}
-                  />
-                </div>
-              </div>
 
-              {catalogError && (
-                <div className="text-xs text-red-400 bg-red-500/10 p-2.5 rounded-lg border border-red-500/20">
-                  {catalogError}
-                </div>
-              )}
-
-              <div className="flex gap-2 justify-end">
-                {editingItem && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEditingItem(null);
-                      setNewItemName("");
-                      setNewItemPrice("");
-                    }}
-                    className="px-4 py-2 rounded-xl text-xs text-[#7a8090] hover:text-white"
-                  >
-                    Cancel Edit
-                  </button>
+                {catalogError && (
+                  <div className="text-xs text-red-400 bg-red-500/10 p-2.5 rounded-lg border border-red-500/20">
+                    {catalogError}
+                  </div>
                 )}
-                <button
-                  type="submit"
-                  disabled={catalogSubmitting}
-                  className="px-5 py-2 rounded-xl text-xs font-semibold transition-all"
-                  style={{
-                    background: "linear-gradient(135deg, #c9a84c, #a07828)",
-                    color: "#0f1117",
-                  }}
-                >
-                  {catalogSubmitting
-                    ? "Saving..."
-                    : editingItem
-                      ? "Update Item"
-                      : "Add Item"}
-                </button>
-              </div>
-            </form>
 
-            {/* Catalog Items Table */}
-            <div className="space-y-2">
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-[#7a8090]">
-                Current Catalog Items ({barItems.length})
-              </h4>
-              <div className="max-h-56 overflow-y-auto rounded-xl border border-white/5">
-                <table className="w-full text-xs text-left">
-                  <thead className="bg-white/[0.03] text-[#7a8090]">
-                    <tr>
-                      <th className="p-3">Item Name</th>
-                      <th className="p-3">Price / Unit</th>
-                      <th className="p-3 text-right">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/5">
-                    {barItems.map((item) => (
-                      <tr key={item.id} className="hover:bg-white/[0.02]">
-                        <td className="p-3 font-medium text-[#f4efe7]">{item.name}</td>
-                        <td className="p-3 text-[#c9a84c] font-semibold">
-                          {item.unit_price.toLocaleString()} Birr
-                        </td>
-                        <td className="p-3 text-right space-x-2">
-                          <button
-                            onClick={() => handleEditClick(item)}
-                            className="text-xs text-[#c9a84c] hover:underline"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => handleDeleteCatalogItem(item.id)}
-                            className="text-xs text-red-400 hover:underline"
-                          >
-                            Delete
-                          </button>
-                        </td>
+                <div className="flex gap-2 justify-end">
+                  {editingItem && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingItem(null);
+                        setNewItemName("");
+                        setNewItemPrice("");
+                      }}
+                      className="px-4 py-2 rounded-xl text-xs text-[#7a8090] hover:text-white"
+                    >
+                      Cancel Edit
+                    </button>
+                  )}
+                  <button
+                    type="submit"
+                    disabled={catalogSubmitting}
+                    className="px-5 py-2 rounded-xl text-xs font-semibold transition-all"
+                    style={{
+                      background: "linear-gradient(135deg, #c9a84c, #a07828)",
+                      color: "#0f1117",
+                    }}
+                  >
+                    {catalogSubmitting
+                      ? "Saving..."
+                      : editingItem
+                        ? "Update Item"
+                        : "Add Item"}
+                  </button>
+                </div>
+              </form>
+
+              {/* Catalog Items Table (Scrollable Section) */}
+              <div className="space-y-2">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-[#7a8090]">
+                  Current Catalog Items ({barItems.length})
+                </h4>
+                <div className="max-h-56 overflow-y-auto rounded-xl border border-white/5">
+                  <table className="w-full text-xs text-left">
+                    <thead className="bg-white/[0.03] text-[#7a8090] sticky top-0 bg-[#161a26]">
+                      <tr>
+                        <th className="p-3">Item Name</th>
+                        <th className="p-3">Price / Unit</th>
+                        <th className="p-3 text-right">Action</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-white/5">
+                      {barItems.map((item) => (
+                        <tr key={item.id} className="hover:bg-white/[0.02]">
+                          <td className="p-3 font-medium text-[#f4efe7]">{item.name}</td>
+                          <td className="p-3 text-[#c9a84c] font-semibold">
+                            {item.unit_price.toLocaleString()} Birr
+                          </td>
+                          <td className="p-3 text-right space-x-2">
+                            <button
+                              onClick={() => handleEditClick(item)}
+                              className="text-xs text-[#c9a84c] hover:underline"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDeleteCatalogItem(item.id)}
+                              className="text-xs text-red-400 hover:underline"
+                            >
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
 
-            <div className="pt-2 flex justify-end">
+            {/* Modal Footer */}
+            <div className="pt-3 border-t flex justify-end shrink-0" style={{ borderColor: "var(--border)" }}>
               <button
                 onClick={() => setShowCatalogModal(false)}
                 className="px-6 py-2.5 rounded-xl text-xs font-semibold"
@@ -885,15 +890,16 @@ export default function NightBarSales() {
 
       {/* History Record Details Modal */}
       {selectedSaleDetail && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto">
           <div
-            className="w-full max-w-2xl rounded-2xl p-6 space-y-6 overflow-hidden shadow-2xl"
+            className="w-full max-w-2xl max-h-[85vh] rounded-2xl p-6 flex flex-col overflow-hidden shadow-2xl my-auto"
             style={{
               backgroundColor: "#161a26",
               border: "1px solid var(--border)",
             }}
           >
-            <div className="flex items-center justify-between border-b pb-4" style={{ borderColor: "var(--border)" }}>
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b pb-4 shrink-0" style={{ borderColor: "var(--border)" }}>
               <div>
                 <h3 className="text-xl font-bold font-display text-[#f4efe7]">
                   📊 Night Sale Details
@@ -910,39 +916,43 @@ export default function NightBarSales() {
               </button>
             </div>
 
-            {/* Line Items Breakdown Table */}
-            <div className="overflow-x-auto rounded-xl border border-white/10">
-              <table className="w-full text-sm text-left">
-                <thead className="bg-white/[0.03] text-[#7a8090] uppercase text-xs">
-                  <tr>
-                    <th className="p-3">Item Name</th>
-                    <th className="p-3">Quantity</th>
-                    <th className="p-3">Unit Price</th>
-                    <th className="p-3">Total</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/5 text-[#e8e6e1]">
-                  {(selectedSaleDetail.items ?? []).map((item, idx) => (
-                    <tr key={item.id || idx}>
-                      <td className="p-3 font-medium text-[#f4efe7]">{item.item_name}</td>
-                      <td className="p-3">{item.quantity}</td>
-                      <td className="p-3">{item.unit_price.toLocaleString()} Birr</td>
-                      <td className="p-3 font-semibold text-[#c9a84c]">
-                        {item.total_price.toLocaleString()} Birr
-                      </td>
+            {/* Scrollable Body */}
+            <div className="flex-1 overflow-y-auto py-4 space-y-6 pr-1">
+              {/* Line Items Breakdown Table */}
+              <div className="overflow-x-auto rounded-xl border border-white/10">
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-white/[0.03] text-[#7a8090] uppercase text-xs sticky top-0 bg-[#161a26]">
+                    <tr>
+                      <th className="p-3">Item Name</th>
+                      <th className="p-3">Quantity</th>
+                      <th className="p-3">Unit Price</th>
+                      <th className="p-3">Total</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-white/5 text-[#e8e6e1]">
+                    {(selectedSaleDetail.items ?? []).map((item, idx) => (
+                      <tr key={item.id || idx}>
+                        <td className="p-3 font-medium text-[#f4efe7]">{item.item_name}</td>
+                        <td className="p-3">{item.quantity}</td>
+                        <td className="p-3">{item.unit_price.toLocaleString()} Birr</td>
+                        <td className="p-3 font-semibold text-[#c9a84c]">
+                          {item.total_price.toLocaleString()} Birr
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {selectedSaleDetail.notes && (
+                <div className="p-3 rounded-xl bg-white/[0.02] border border-white/5 text-xs text-[#7a8090]">
+                  <span className="font-semibold text-[#e8e6e1]">Notes:</span> {selectedSaleDetail.notes}
+                </div>
+              )}
             </div>
 
-            {selectedSaleDetail.notes && (
-              <div className="p-3 rounded-xl bg-white/[0.02] border border-white/5 text-xs text-[#7a8090]">
-                <span className="font-semibold text-[#e8e6e1]">Notes:</span> {selectedSaleDetail.notes}
-              </div>
-            )}
-
-            <div className="flex items-center justify-between pt-4 border-t" style={{ borderColor: "var(--border)" }}>
+            {/* Modal Footer */}
+            <div className="flex items-center justify-between pt-4 border-t shrink-0" style={{ borderColor: "var(--border)" }}>
               <div>
                 <span className="text-xs text-[#7a8090]">Grand Total:</span>
                 <p className="text-2xl font-bold font-display text-[#c9a84c]">
