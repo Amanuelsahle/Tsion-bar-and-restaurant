@@ -58,7 +58,6 @@ const navGroups: NavGroup[] = [
       },
       { id: "give-to-bar", label: "Give to Bar", icon: "↗" },
       { id: "night-bar-sales", label: "Night Bar Sales", icon: "🌙" },
-      { id: "history", label: "Distribution History", icon: "≡" },
       { id: "inventory", label: "Inventory", icon: "◉" },
       {
         id: "reports",

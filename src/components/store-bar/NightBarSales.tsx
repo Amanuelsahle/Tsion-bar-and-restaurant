@@ -48,9 +48,46 @@ export default function NightBarSales() {
   const [catalogError, setCatalogError] = useState<string | null>(null);
   const [catalogSubmitting, setCatalogSubmitting] = useState(false);
 
-  // History Detail Modal
+  // History Detail Modal & Date Filter
   const [selectedSaleDetail, setSelectedSaleDetail] = useState<BarNightSaleRecord | null>(null);
   const [historySearch, setHistorySearch] = useState("");
+  const [historyStartDate, setHistoryStartDate] = useState("");
+  const [historyEndDate, setHistoryEndDate] = useState("");
+  const [showDateSumModal, setShowDateSumModal] = useState(false);
+
+  const setDatePreset = (preset: "today" | "thisWeek" | "thisMonth" | "clear") => {
+    const today = new Date();
+    const todayIso = today.toISOString().split("T")[0];
+
+    if (preset === "clear") {
+      setHistoryStartDate("");
+      setHistoryEndDate("");
+      return;
+    }
+
+    if (preset === "today") {
+      setHistoryStartDate(todayIso);
+      setHistoryEndDate(todayIso);
+      return;
+    }
+
+    if (preset === "thisWeek") {
+      const now = new Date();
+      const day = now.getDay();
+      const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+      const monday = new Date(now.setDate(diff));
+      setHistoryStartDate(monday.toISOString().split("T")[0]);
+      setHistoryEndDate(todayIso);
+      return;
+    }
+
+    if (preset === "thisMonth") {
+      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+      setHistoryStartDate(firstDay.toISOString().split("T")[0]);
+      setHistoryEndDate(todayIso);
+      return;
+    }
+  };
 
   useEffect(() => {
     loadData();
@@ -284,6 +321,9 @@ export default function NightBarSales() {
   };
 
   const filteredHistory = salesHistory.filter((s) => {
+    if (historyStartDate && s.sale_date < historyStartDate) return false;
+    if (historyEndDate && s.sale_date > historyEndDate) return false;
+
     if (!historySearch) return true;
     const query = historySearch.toLowerCase();
     return (
@@ -292,6 +332,65 @@ export default function NightBarSales() {
       (s.items && s.items.some((i) => i.item_name.toLowerCase().includes(query)))
     );
   });
+
+  const rangeGrandTotal = filteredHistory.reduce((sum, s) => sum + (s.grand_total || 0), 0);
+
+  const handlePrintDateRangeSummary = () => {
+    const recordsTableHtml = filteredHistory
+      .map(
+        (r) => `
+        <tr>
+          <td>${r.sale_date}</td>
+          <td>${r.shift_name ?? "Night Shift"}</td>
+          <td>${r.items?.length ?? 0} item(s)</td>
+          <td>${r.grand_total.toLocaleString()} Birr</td>
+        </tr>
+      `
+      )
+      .join("");
+
+    const dateRangeLabel =
+      historyStartDate && historyEndDate
+        ? `${historyStartDate} to ${historyEndDate}`
+        : historyStartDate
+        ? `From ${historyStartDate}`
+        : historyEndDate
+        ? `Up to ${historyEndDate}`
+        : "All Time";
+
+    const htmlContent = `
+      <div class="container">
+        <div class="header">
+          <p class="title">Tsion Bar & Restaurant</p>
+          <p class="subtitle">Night Bar Sales Date-Range Summary Report</p>
+          <div class="meta">
+            <div><strong>Date Range:</strong> ${dateRangeLabel}</div>
+            <div><strong>Total Records:</strong> ${filteredHistory.length}</div>
+            <div><strong>Generated:</strong> ${new Date().toLocaleDateString()}</div>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Shift</th>
+              <th>Items Count</th>
+              <th>Grand Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${recordsTableHtml}
+          </tbody>
+        </table>
+        <div class="grand-total">
+          <span>Sum of Grand Totals</span>
+          <span>${rangeGrandTotal.toLocaleString()} Birr</span>
+        </div>
+      </div>
+    `;
+
+    openReceiptWindow("Night Sales Date Range Report", htmlContent);
+  };
 
   return (
     <div className="space-y-6">
@@ -306,7 +405,22 @@ export default function NightBarSales() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={() => {
+              setActiveTab("history");
+              setShowDateSumModal(true);
+            }}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all shadow-lg hover:scale-[1.03] active:scale-[0.98]"
+            style={{
+              background: "linear-gradient(135deg, #c9a84c 0%, #e5c065 50%, #a07828 100%)",
+              color: "#0f1117",
+              boxShadow: "0 4px 15px rgba(201,168,76,0.35)",
+            }}
+          >
+            <span>🧮</span> Calculate Date Range Sum
+          </button>
+
           <button
             onClick={() => {
               setEditingItem(null);
@@ -333,7 +447,7 @@ export default function NightBarSales() {
         <button
           onClick={() => setActiveTab("calculator")}
           className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all ${activeTab === "calculator"
-              ? "bg-[#c9a84c]/20 text-[#c9a84c] border border-[#c9a84c]/30"
+              ? "bg-[#c9a84c]/20 text-[#c9a84c] border border-[#c9a84c]/30 font-semibold"
               : "text-[#7a8090] hover:text-white"
             }`}
         >
@@ -342,7 +456,7 @@ export default function NightBarSales() {
         <button
           onClick={() => setActiveTab("history")}
           className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all ${activeTab === "history"
-              ? "bg-[#c9a84c]/20 text-[#c9a84c] border border-[#c9a84c]/30"
+              ? "bg-[#c9a84c]/20 text-[#c9a84c] border border-[#c9a84c]/30 font-semibold"
               : "text-[#7a8090] hover:text-white"
             }`}
         >
@@ -359,6 +473,36 @@ export default function NightBarSales() {
             border: "1px solid var(--border)",
           }}
         >
+          {/* Quick Access to History Date Range Calculator */}
+          <div className="p-4 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-gradient-to-r from-[#c9a84c]/20 via-[#c9a84c]/10 to-transparent border border-[#c9a84c]/30 shadow-md">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#c9a84c]/20 border border-[#c9a84c]/40 flex items-center justify-center text-xl text-[#c9a84c] shrink-0">
+                🧮
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-[#f4efe7]">
+                  Need to calculate sales between specific dates?
+                </h3>
+                <p className="text-xs text-[#7a8090] mt-0.5">
+                  Calculate the sum of grand totals from given date to given date in Night Sales History.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                setActiveTab("history");
+                setShowDateSumModal(true);
+              }}
+              className="px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-md shrink-0 hover:scale-[1.02]"
+              style={{
+                background: "linear-gradient(135deg, #c9a84c 0%, #a07828 100%)",
+                color: "#0f1117",
+              }}
+            >
+              Open Date Range Calculator →
+            </button>
+          </div>
+
           {/* Form Header Info */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
@@ -606,22 +750,156 @@ export default function NightBarSales() {
             border: "1px solid var(--border)",
           }}
         >
-          {/* History Search */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <h2 className="text-lg font-bold text-[#f4efe7]">Night Sales Records</h2>
-            <div className="w-full sm:w-64">
-              <input
-                type="text"
-                value={historySearch}
-                onChange={(e) => setHistorySearch(e.target.value)}
-                placeholder="Search date or item..."
-                className="w-full px-4 py-2 rounded-xl text-base md:text-sm outline-none"
-                style={{
-                  backgroundColor: "var(--secondary)",
-                  border: "1px solid var(--border)",
-                  color: "var(--foreground)",
-                }}
-              />
+          {/* History Search & Date Range Calculator */}
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-bold text-[#f4efe7]">Night Sales Records & Calculator</h2>
+                <p className="text-xs text-[#7a8090]">
+                  Calculate sum of grand totals between specific dates or view all history.
+                </p>
+              </div>
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <button
+                  type="button"
+                  onClick={() => setShowDateSumModal(true)}
+                  className="px-3.5 py-2 rounded-xl text-xs font-semibold transition-all shadow-md bg-[#c9a84c]/20 text-[#c9a84c] border border-[#c9a84c]/40 hover:bg-[#c9a84c]/30 flex items-center gap-1.5 shrink-0"
+                >
+                  <span>🧮</span>
+                  <span>Calculate Date Range Sum</span>
+                </button>
+                <div className="w-full sm:w-64">
+                  <input
+                    type="text"
+                    value={historySearch}
+                    onChange={(e) => setHistorySearch(e.target.value)}
+                    placeholder="Search date or item..."
+                    className="w-full px-4 py-2 rounded-xl text-base md:text-sm outline-none"
+                    style={{
+                      backgroundColor: "var(--secondary)",
+                      border: "1px solid var(--border)",
+                      color: "var(--foreground)",
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Date Range Calculator Control Box */}
+            <div
+              className="p-4 rounded-2xl space-y-4"
+              style={{
+                backgroundColor: "var(--secondary)",
+                border: "1px solid var(--border)",
+              }}
+            >
+              <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+                {/* Date Inputs & Presets */}
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-[#7a8090] uppercase tracking-wider block">
+                      From Date
+                    </label>
+                    <input
+                      type="date"
+                      value={historyStartDate}
+                      onChange={(e) => setHistoryStartDate(e.target.value)}
+                      className="px-3.5 py-2 rounded-xl text-xs font-medium outline-none"
+                      style={{
+                        backgroundColor: "var(--card)",
+                        border: "1px solid var(--border)",
+                        color: "var(--foreground)",
+                        colorScheme: "dark",
+                      }}
+                    />
+                  </div>
+
+                  <span className="text-[#7a8090] self-end pb-2 hidden sm:inline">→</span>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-[#7a8090] uppercase tracking-wider block">
+                      To Date
+                    </label>
+                    <input
+                      type="date"
+                      value={historyEndDate}
+                      onChange={(e) => setHistoryEndDate(e.target.value)}
+                      className="px-3.5 py-2 rounded-xl text-xs font-medium outline-none"
+                      style={{
+                        backgroundColor: "var(--card)",
+                        border: "1px solid var(--border)",
+                        color: "var(--foreground)",
+                        colorScheme: "dark",
+                      }}
+                    />
+                  </div>
+
+                  {/* Quick Preset Buttons */}
+                  <div className="flex items-center gap-1.5 self-end pb-0.5">
+                    <button
+                      type="button"
+                      onClick={() => setDatePreset("today")}
+                      className="px-2.5 py-1.5 rounded-lg text-xs font-medium hover:bg-white/5 transition-all text-[#e8e6e1] border border-white/10"
+                    >
+                      Today
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDatePreset("thisWeek")}
+                      className="px-2.5 py-1.5 rounded-lg text-xs font-medium hover:bg-white/5 transition-all text-[#e8e6e1] border border-white/10"
+                    >
+                      This Week
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDatePreset("thisMonth")}
+                      className="px-2.5 py-1.5 rounded-lg text-xs font-medium hover:bg-white/5 transition-all text-[#e8e6e1] border border-white/10"
+                    >
+                      This Month
+                    </button>
+                    {(historyStartDate || historyEndDate) && (
+                      <button
+                        type="button"
+                        onClick={() => setDatePreset("clear")}
+                        className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-red-400 hover:bg-red-500/10 border border-red-500/20"
+                      >
+                        Reset
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Grand Total Calculation Summary Badge */}
+                <div
+                  className="px-5 py-3 rounded-xl flex items-center justify-between gap-6 shrink-0"
+                  style={{
+                    background: "linear-gradient(135deg, rgba(201,168,76,0.15) 0%, rgba(201,168,76,0.05) 100%)",
+                    border: "1px solid rgba(201,168,76,0.3)",
+                  }}
+                >
+                  <div>
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-[#7a8090] block">
+                      {historyStartDate || historyEndDate
+                        ? `Sum of Grand Totals (${filteredHistory.length} record${filteredHistory.length === 1 ? "" : "s"})`
+                        : `Total Sales Sum (${filteredHistory.length} record${filteredHistory.length === 1 ? "" : "s"})`}
+                    </span>
+                    <span className="text-xs text-[#e8e6e1]/70">
+                      {historyStartDate && historyEndDate
+                        ? `${historyStartDate} to ${historyEndDate}`
+                        : historyStartDate
+                        ? `From ${historyStartDate}`
+                        : historyEndDate
+                        ? `Up to ${historyEndDate}`
+                        : "All Records"}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-2xl font-bold font-display text-[#c9a84c]">
+                      {rangeGrandTotal.toLocaleString()} <span className="text-xs font-normal">Birr</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -982,6 +1260,230 @@ export default function NightBarSales() {
                   Close
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Date Range Grand Total Calculator Modal */}
+      {showDateSumModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto">
+          <div
+            className="w-full max-w-3xl max-h-[90vh] rounded-2xl p-6 flex flex-col overflow-hidden shadow-2xl my-auto"
+            style={{
+              backgroundColor: "#161a26",
+              border: "1px solid var(--border)",
+            }}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b pb-4 shrink-0" style={{ borderColor: "var(--border)" }}>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#c9a84c]/20 border border-[#c9a84c]/30 flex items-center justify-center text-xl text-[#c9a84c]">
+                  🧮
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold font-display text-[#f4efe7]">
+                    Date Range Grand Total Calculator
+                  </h3>
+                  <p className="text-xs text-[#7a8090] mt-0.5">
+                    Select a date range to calculate total sales and analyze grand totals.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowDateSumModal(false)}
+                className="text-lg text-[#7a8090] hover:text-white px-2"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="flex-1 overflow-y-auto py-5 space-y-6 pr-1">
+              {/* Date Input Controls */}
+              <div className="p-4 rounded-xl space-y-4" style={{ backgroundColor: "var(--secondary)", border: "1px solid var(--border)" }}>
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-[#c9a84c]">
+                  Select Calculation Period
+                </h4>
+                <div className="flex flex-wrap items-center gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs text-[#7a8090]">From Date</label>
+                    <input
+                      type="date"
+                      value={historyStartDate}
+                      onChange={(e) => setHistoryStartDate(e.target.value)}
+                      className="px-3.5 py-2.5 rounded-xl text-xs font-medium outline-none block"
+                      style={{
+                        backgroundColor: "var(--card)",
+                        border: "1px solid var(--border)",
+                        color: "var(--foreground)",
+                        colorScheme: "dark",
+                      }}
+                    />
+                  </div>
+                  <span className="text-[#7a8090] self-end pb-2">→</span>
+                  <div className="space-y-1">
+                    <label className="text-xs text-[#7a8090]">To Date</label>
+                    <input
+                      type="date"
+                      value={historyEndDate}
+                      onChange={(e) => setHistoryEndDate(e.target.value)}
+                      className="px-3.5 py-2.5 rounded-xl text-xs font-medium outline-none block"
+                      style={{
+                        backgroundColor: "var(--card)",
+                        border: "1px solid var(--border)",
+                        color: "var(--foreground)",
+                        colorScheme: "dark",
+                      }}
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2 self-end pb-0.5">
+                    <button
+                      type="button"
+                      onClick={() => setDatePreset("today")}
+                      className="px-3 py-2 rounded-xl text-xs font-medium hover:bg-white/5 transition-all text-[#e8e6e1] border border-white/10"
+                    >
+                      Today
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDatePreset("thisWeek")}
+                      className="px-3 py-2 rounded-xl text-xs font-medium hover:bg-white/5 transition-all text-[#e8e6e1] border border-white/10"
+                    >
+                      This Week
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDatePreset("thisMonth")}
+                      className="px-3 py-2 rounded-xl text-xs font-medium hover:bg-white/5 transition-all text-[#e8e6e1] border border-white/10"
+                    >
+                      This Month
+                    </button>
+                    {(historyStartDate || historyEndDate) && (
+                      <button
+                        type="button"
+                        onClick={() => setDatePreset("clear")}
+                        className="px-3 py-2 rounded-xl text-xs font-medium text-red-400 hover:bg-red-500/10 border border-red-500/20"
+                      >
+                        Reset Dates
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Calculation Summary Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div
+                  className="p-4 rounded-xl flex flex-col justify-between"
+                  style={{
+                    background: "linear-gradient(135deg, rgba(201,168,76,0.18) 0%, rgba(201,168,76,0.04) 100%)",
+                    border: "1px solid rgba(201,168,76,0.35)",
+                  }}
+                >
+                  <span className="text-xs font-semibold text-[#7a8090] uppercase tracking-wider">
+                    Sum of Grand Totals
+                  </span>
+                  <p className="text-3xl font-bold font-display text-[#c9a84c] mt-2">
+                    {rangeGrandTotal.toLocaleString()} <span className="text-xs font-normal">Birr</span>
+                  </p>
+                </div>
+
+                <div
+                  className="p-4 rounded-xl flex flex-col justify-between"
+                  style={{
+                    backgroundColor: "var(--secondary)",
+                    border: "1px solid var(--border)",
+                  }}
+                >
+                  <span className="text-xs font-semibold text-[#7a8090] uppercase tracking-wider">
+                    Sales Records Count
+                  </span>
+                  <p className="text-2xl font-bold text-[#f4efe7] mt-2">
+                    {filteredHistory.length} <span className="text-xs font-normal text-[#7a8090]">record(s)</span>
+                  </p>
+                </div>
+
+                <div
+                  className="p-4 rounded-xl flex flex-col justify-between"
+                  style={{
+                    backgroundColor: "var(--secondary)",
+                    border: "1px solid var(--border)",
+                  }}
+                >
+                  <span className="text-xs font-semibold text-[#7a8090] uppercase tracking-wider">
+                    Average Daily Sale
+                  </span>
+                  <p className="text-2xl font-bold text-[#f4efe7] mt-2">
+                    {filteredHistory.length > 0
+                      ? `${Math.round(rangeGrandTotal / filteredHistory.length).toLocaleString()} Birr`
+                      : "0 Birr"}
+                  </p>
+                </div>
+              </div>
+
+              {/* Included Records Breakdown Table */}
+              <div className="space-y-2">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-[#7a8090]">
+                  Records Included in Calculation ({filteredHistory.length})
+                </h4>
+                {filteredHistory.length === 0 ? (
+                  <div className="text-center py-8 text-[#7a8090] bg-white/[0.01] rounded-xl border border-white/5">
+                    <p className="text-sm">No sales records match the selected date range.</p>
+                  </div>
+                ) : (
+                  <div className="max-h-56 overflow-y-auto rounded-xl border border-white/10">
+                    <table className="w-full text-xs text-left">
+                      <thead className="bg-white/[0.03] text-[#7a8090] uppercase sticky top-0 bg-[#161a26]">
+                        <tr>
+                          <th className="p-3">Date</th>
+                          <th className="p-3">Shift</th>
+                          <th className="p-3">Items Count</th>
+                          <th className="p-3 text-right">Grand Total</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/5 text-[#e8e6e1]">
+                        {filteredHistory.map((record) => (
+                          <tr key={record.id} className="hover:bg-white/[0.02]">
+                            <td className="p-3 font-medium text-[#f4efe7]">{record.sale_date}</td>
+                            <td className="p-3 text-[#7a8090]">{record.shift_name ?? "Night Shift"}</td>
+                            <td className="p-3">{record.items?.length ?? 0} item(s)</td>
+                            <td className="p-3 text-right font-semibold text-[#c9a84c]">
+                              {record.grand_total.toLocaleString()} Birr
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex items-center justify-between pt-4 border-t shrink-0" style={{ borderColor: "var(--border)" }}>
+              <button
+                onClick={handlePrintDateRangeSummary}
+                disabled={filteredHistory.length === 0}
+                className="px-5 py-2.5 rounded-xl text-xs font-semibold shadow-md disabled:opacity-50 flex items-center gap-1.5"
+                style={{
+                  background: "linear-gradient(135deg, #c9a84c, #a07828)",
+                  color: "#0f1117",
+                }}
+              >
+                <span>🖨</span> Print / Export Range Summary
+              </button>
+              <button
+                onClick={() => setShowDateSumModal(false)}
+                className="px-6 py-2.5 rounded-xl text-xs font-medium"
+                style={{
+                  backgroundColor: "var(--secondary)",
+                  border: "1px solid var(--border)",
+                  color: "var(--foreground)",
+                }}
+              >
+                Close Calculator
+              </button>
             </div>
           </div>
         </div>

@@ -443,7 +443,13 @@ export default function DashboardPage() {
           />
         );
       case "give-to-bar":
-        return <GiveToBar items={items} onSave={handleAddTransaction} />;
+        return (
+          <GiveToBar
+            items={items}
+            transactions={transactions}
+            onSave={handleAddTransaction}
+          />
+        );
       case "night-bar-sales":
         return <NightBarSales />;
       case "history":

@@ -2,9 +2,11 @@ import { useState } from "react";
 import type { Item, Transaction } from "../../lib/types";
 import { BAR_MANAGERS } from "../../lib/types";
 import { openReceiptWindow } from "../../lib/receipt";
+import DistributionHistory from "./DistributionHistory";
 
 interface GiveToBarProps {
   items: Item[];
+  transactions?: Transaction[];
   onSave: (transaction: Transaction) => Promise<void> | void;
 }
 
@@ -13,8 +15,9 @@ interface RowState {
   boxes: number;
 }
 
-export default function GiveToBar({ items, onSave }: GiveToBarProps) {
+export default function GiveToBar({ items, transactions = [], onSave }: GiveToBarProps) {
   const today = new Date().toISOString().split("T")[0];
+  const [activeTab, setActiveTab] = useState<"give" | "history">("give");
   const [date, setDate] = useState(today);
   const [barMan, setBarMan] = useState("");
   const [rows, setRows] = useState<RowState[]>([{ itemId: "", boxes: 0 }]);
@@ -330,17 +333,45 @@ export default function GiveToBar({ items, onSave }: GiveToBarProps) {
           className="text-sm mt-1"
           style={{ color: "var(--muted-foreground)" }}
         >
-          Record daily bar distribution and auto-deduct from store inventory
+          Record daily bar distribution and view distribution history
         </p>
       </div>
 
+      {/* Tabs Navigation */}
       <div
-        className="rounded-2xl p-6 space-y-6 overflow-hidden"
-        style={{
-          backgroundColor: "var(--card)",
-          border: "1px solid var(--border)",
-        }}
+        className="flex items-center gap-2 border-b p-1 rounded-xl"
+        style={{ backgroundColor: "var(--card)", borderColor: "var(--border)" }}
       >
+        <button
+          onClick={() => setActiveTab("give")}
+          className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all ${
+            activeTab === "give"
+              ? "bg-[#c9a84c]/20 text-[#c9a84c] border border-[#c9a84c]/30 font-semibold"
+              : "text-[#7a8090] hover:text-white"
+          }`}
+        >
+          ↗ Give Items to Bar
+        </button>
+        <button
+          onClick={() => setActiveTab("history")}
+          className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all ${
+            activeTab === "history"
+              ? "bg-[#c9a84c]/20 text-[#c9a84c] border border-[#c9a84c]/30 font-semibold"
+              : "text-[#7a8090] hover:text-white"
+          }`}
+        >
+          📜 Distribution History ({transactions.length})
+        </button>
+      </div>
+
+      {activeTab === "give" && (
+        <div
+          className="rounded-2xl p-6 space-y-6 overflow-hidden"
+          style={{
+            backgroundColor: "var(--card)",
+            border: "1px solid var(--border)",
+          }}
+        >
         {/* Header fields */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="w-full space-y-1.5 overflow-hidden">
@@ -615,6 +646,11 @@ export default function GiveToBar({ items, onSave }: GiveToBarProps) {
           </button>
         </div>
       </div>
+      )}
+
+      {activeTab === "history" && (
+        <DistributionHistory transactions={transactions} items={items} />
+      )}
     </div>
   );
 }
