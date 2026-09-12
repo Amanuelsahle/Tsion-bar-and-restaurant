@@ -347,17 +347,23 @@ export default function CashierReports() {
           >
             <div className="flex flex-wrap items-center gap-4 justify-between">
               <div className="flex flex-wrap items-center gap-3">
-                <DatePickerInput
-                  label="Select Date"
-                  value={singleDate}
+                <div className="flex gap-3 items-center">
+                  <label className="block text-sm font-medium mb-1 sm:hidden"
+                    style={{
+                      color: "var(--foreground)",
+                    }}>Select Date</label>
+                  <DatePickerInput
+                    label="Select Date"
+                    value={singleDate}
 
-                  onChange={(val) => {
-                    setSingleDate(val);
-                    setStartDate("");
-                    setEndDate("");
-                  }}
-                  className="w-full sm:w-36"
-                />
+                    onChange={(val) => {
+                      setSingleDate(val);
+                      setStartDate("");
+                      setEndDate("");
+                    }}
+                    className="w-full sm:w-36"
+                  />
+                </div>
 
                 <div className="flex items-center gap-1.5 self-end pb-0.5">
                   <button

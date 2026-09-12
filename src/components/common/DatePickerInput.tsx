@@ -41,7 +41,7 @@ export default function DatePickerInput({
       }}
 
 
-      className={`w-full min-h-[36px] px-3 py-1.5 rounded-lg border text-base md:text-sm font-medium bg-[var(--card)] text-foreground cursor-pointer transition-all hover:border-[#c9a84c]/50 focus:outline-none focus:border-[#c9a84c] ${className}`}
+      className={` min-h-[36px] px-2 py-1.5 rounded-lg border text-base md:text-sm font-medium bg-[var(--card)] text-foreground cursor-pointer transition-all hover:border-[#c9a84c]/50 focus:outline-none focus:border-[#c9a84c] ${className}`}
       style={{
         borderColor: value ? "rgba(201,168,76,0.4)" : "var(--border)",
       }}

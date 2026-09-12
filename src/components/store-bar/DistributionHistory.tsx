@@ -388,12 +388,19 @@ export default function DistributionHistory({
             </option>
           ))}
         </select>
-        <DatePickerInput
-          value={filterDate}
+        <div className="flex gap-3 items-center">
+          <label className="block text-sm font-medium mb-1 sm:hidden"
+            style={{
+              color: "var(--foreground)",
+            }}>Select Date</label>
+          <DatePickerInput
+            value={filterDate}
 
-          onChange={(val) => setFilterDate(val)}
-          className="w-full sm:w-36"
-        />
+            onChange={(val) => setFilterDate(val)}
+            className="w-10 sm:w-36 h-full"
+          />
+        </div>
+
         {(search || filterBarMan || filterDate) && (
           <button
             onClick={() => {
