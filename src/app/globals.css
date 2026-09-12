@@ -99,4 +99,30 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   pointer-events: auto;
 }
 
+/* iOS Safari Specific: Show mm/dd/yyyy placeholder when value is empty */
+@supports (-webkit-touch-callout: none) {
+  input[type="date"]::before {
+    content: attr(placeholder);
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #7a8090;
+    font-size: 0.85rem;
+    font-weight: 500;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  input[type="date"]:not([placeholder])::before {
+    content: "mm/dd/yyyy";
+  }
+
+  input[type="date"]:not([value=""])::before,
+  input[type="date"]:valid::before {
+    content: "" !important;
+    display: none !important;
+  }
+}
+
 

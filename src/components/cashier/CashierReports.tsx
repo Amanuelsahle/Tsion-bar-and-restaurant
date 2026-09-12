@@ -356,6 +356,7 @@ export default function CashierReports() {
                   </label>
                   <input
                     type="date"
+                    placeholder="mm/dd/yyyy"
                     value={singleDate}
                     onChange={(e) => {
                       setSingleDate(e.target.value);
