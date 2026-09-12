@@ -59,12 +59,6 @@ const navGroups: NavGroup[] = [
       { id: "give-to-bar", label: "Give to Bar", icon: "↗" },
       { id: "night-bar-sales", label: "Night Bar Sales", icon: "🌙" },
       { id: "inventory", label: "Inventory", icon: "◉" },
-      {
-        id: "reports",
-        label: "Reports",
-        icon: "▦",
-        roleAccess: ["super_admin", "admin", "manager"],
-      },
     ],
   },
   {

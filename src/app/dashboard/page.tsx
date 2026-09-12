@@ -459,7 +459,15 @@ export default function DashboardPage() {
       case "inventory":
         return <Inventory items={items} />;
       case "reports":
-        return <Reports items={items} transactions={transactions} />;
+        return (
+          <Dashboard
+            items={items}
+            transactions={transactions}
+            onNavigate={handleNavigate}
+            role={role}
+            initialTab="reports"
+          />
+        );
       case "cashier-bonos":
         return <BonoManagement />;
       case "cashier-checkout":
