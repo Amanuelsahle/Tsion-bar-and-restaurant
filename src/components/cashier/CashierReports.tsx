@@ -360,14 +360,14 @@ export default function CashierReports() {
                     setStartDate("");
                     setEndDate("");
                   }}
-                  className="w-full sm:w-52"
+                  className="w-full sm:w-36"
                 />
 
                 <div className="flex items-center gap-1.5 self-end pb-0.5">
                   <button
                     type="button"
                     onClick={() => setDatePreset("today")}
-                    className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all border ${singleDate === new Date().toISOString().split("T")[0]
+                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all border ${singleDate === new Date().toISOString().split("T")[0]
                       ? "bg-[#c9a84c] text-[#0f1117] border-[#c9a84c] font-bold"
                       : "text-[#e8e6e1] hover:bg-white/5 border-white/10"
                       }`}
@@ -377,7 +377,7 @@ export default function CashierReports() {
                   <button
                     type="button"
                     onClick={() => setDatePreset("thisWeek")}
-                    className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all border ${startDate && !singleDate
+                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all border ${startDate && !singleDate
                       ? "bg-[#c9a84c]/20 text-[#c9a84c] border-[#c9a84c]/40 font-semibold"
                       : "text-[#e8e6e1] hover:bg-white/5 border-white/10"
                       }`}
@@ -387,7 +387,7 @@ export default function CashierReports() {
                   <button
                     type="button"
                     onClick={() => setDatePreset("thisMonth")}
-                    className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all border ${startDate && !singleDate
+                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all border ${startDate && !singleDate
                       ? "bg-[#c9a84c]/20 text-[#c9a84c] border-[#c9a84c]/40 font-semibold"
                       : "text-[#e8e6e1] hover:bg-white/5 border-white/10"
                       }`}
@@ -398,7 +398,7 @@ export default function CashierReports() {
                     <button
                       type="button"
                       onClick={() => setDatePreset("clear")}
-                      className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-red-400 hover:bg-red-500/10 border border-red-500/20"
+                      className="px-2.5 py-1 rounded-lg text-xs font-medium text-red-400 hover:bg-red-500/10 border border-red-500/20"
                     >
                       Reset
                     </button>

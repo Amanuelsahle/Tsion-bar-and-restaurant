@@ -831,16 +831,16 @@ export default function NightBarSales() {
                       label="From Date"
                       value={historyStartDate}
                       onChange={(val) => setHistoryStartDate(val)}
-                      className="w-full sm:w-44"
+                      className="w-full sm:w-36"
                     />
 
-                    <span className="text-[#7a8090] self-end pb-3 hidden sm:inline">→</span>
+                    <span className="text-[#7a8090] self-end pb-2 hidden sm:inline">→</span>
 
                     <DatePickerInput
                       label="To Date"
                       value={historyEndDate}
                       onChange={(val) => setHistoryEndDate(val)}
-                      className="w-full sm:w-44"
+                      className="w-full sm:w-36"
                     />
 
                     {/* Quick Preset Buttons */}
@@ -848,21 +848,21 @@ export default function NightBarSales() {
                       <button
                         type="button"
                         onClick={() => setDatePreset("today")}
-                        className="px-2.5 py-1.5 rounded-lg text-xs font-medium hover:bg-white/5 transition-all text-[#e8e6e1] border border-white/10"
+                        className="px-2.5 py-1 rounded-lg text-xs font-medium hover:bg-white/5 transition-all text-[#e8e6e1] border border-white/10"
                       >
                         Today
                       </button>
                       <button
                         type="button"
                         onClick={() => setDatePreset("thisWeek")}
-                        className="px-2.5 py-1.5 rounded-lg text-xs font-medium hover:bg-white/5 transition-all text-[#e8e6e1] border border-white/10"
+                        className="px-2.5 py-1 rounded-lg text-xs font-medium hover:bg-white/5 transition-all text-[#e8e6e1] border border-white/10"
                       >
                         This Week
                       </button>
                       <button
                         type="button"
                         onClick={() => setDatePreset("thisMonth")}
-                        className="px-2.5 py-1.5 rounded-lg text-xs font-medium hover:bg-white/5 transition-all text-[#e8e6e1] border border-white/10"
+                        className="px-2.5 py-1 rounded-lg text-xs font-medium hover:bg-white/5 transition-all text-[#e8e6e1] border border-white/10"
                       >
                         This Month
                       </button>
@@ -870,7 +870,7 @@ export default function NightBarSales() {
                         <button
                           type="button"
                           onClick={() => setDatePreset("clear")}
-                          className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-red-400 hover:bg-red-500/10 border border-red-500/20"
+                          className="px-2.5 py-1 rounded-lg text-xs font-medium text-red-400 hover:bg-red-500/10 border border-red-500/20"
                         >
                           Reset
                         </button>
@@ -1314,38 +1314,20 @@ export default function NightBarSales() {
                 <h4 className="text-xs font-semibold uppercase tracking-wider text-[#c9a84c]">
                   Select Calculation Period
                 </h4>
-                <div className="flex flex-wrap items-center gap-4">
-                  <div className="space-y-1">
-                    <label className="text-xs text-[#7a8090]">From Date</label>
-                    <input
-                      type="date"
-                      value={historyStartDate}
-                      onChange={(e) => setHistoryStartDate(e.target.value)}
-                      className="px-3.5 py-2.5 rounded-xl text-xs font-medium outline-none block"
-                      style={{
-                        backgroundColor: "var(--card)",
-                        border: "1px solid var(--border)",
-                        color: "var(--foreground)",
-                        colorScheme: "dark",
-                      }}
-                    />
-                  </div>
-                  <span className="text-[#7a8090] self-end pb-2">→</span>
-                  <div className="space-y-1">
-                    <label className="text-xs text-[#7a8090]">To Date</label>
-                    <input
-                      type="date"
-                      value={historyEndDate}
-                      onChange={(e) => setHistoryEndDate(e.target.value)}
-                      className="px-3.5 py-2.5 rounded-xl text-xs font-medium outline-none block"
-                      style={{
-                        backgroundColor: "var(--card)",
-                        border: "1px solid var(--border)",
-                        color: "var(--foreground)",
-                        colorScheme: "dark",
-                      }}
-                    />
-                  </div>
+                <div className="flex flex-wrap items-center gap-3">
+                  <DatePickerInput
+                    label="From Date"
+                    value={historyStartDate}
+                    onChange={(val) => setHistoryStartDate(val)}
+                    className="w-36"
+                  />
+                  <span className="text-[#7a8090] self-end pb-2 hidden sm:inline">→</span>
+                  <DatePickerInput
+                    label="To Date"
+                    value={historyEndDate}
+                    onChange={(val) => setHistoryEndDate(val)}
+                    className="w-36"
+                  />
 
                   <div className="flex items-center gap-2 self-end pb-0.5">
                     <button

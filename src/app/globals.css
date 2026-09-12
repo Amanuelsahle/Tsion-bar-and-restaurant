@@ -67,7 +67,7 @@ body {
 
 /* Fix iOS Mobile Safari & WebKit Date Input Rendering */
 input[type="date"] {
-  min-height: 42px;
+  min-height: 34px;
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;

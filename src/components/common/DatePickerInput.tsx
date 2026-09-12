@@ -25,7 +25,7 @@ export default function DatePickerInput({
         </label>
       )}
       <div
-        className="relative w-full min-h-[42px] px-3.5 py-2.5 rounded-xl border flex items-center justify-between text-xs font-medium cursor-pointer transition-all hover:border-[#c9a84c]/50"
+        className="relative w-full min-h-[34px] px-2.5 py-1 rounded-lg border flex items-center justify-between text-xs font-medium cursor-pointer transition-all hover:border-[#c9a84c]/50"
         style={{
           backgroundColor: "var(--card)",
           borderColor: value ? "rgba(201,168,76,0.4)" : "var(--border)",
@@ -34,12 +34,12 @@ export default function DatePickerInput({
         <span className={value ? "text-[#f4efe7] font-semibold" : "text-[#7a8090]"}>
           {value || placeholder}
         </span>
-        <span className="text-sm shrink-0 ml-2 opacity-80">📅</span>
+        <span className="text-xs shrink-0 ml-1.5 opacity-80">📅</span>
         <input
           type="date"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10 text-base"
+          className="absolute inset-0 w-full opacity-0 cursor-pointer z-10 text-base"
         />
       </div>
     </div>

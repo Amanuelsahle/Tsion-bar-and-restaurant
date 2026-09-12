@@ -392,7 +392,7 @@ export default function DistributionHistory({
           value={filterDate}
           placeholder="Filter by date..."
           onChange={(val) => setFilterDate(val)}
-          className="min-w-44"
+          className="w-full sm:w-36"
         />
         {(search || filterBarMan || filterDate) && (
           <button
@@ -448,13 +448,13 @@ export default function DistributionHistory({
                 label="From"
                 value={rangeStart}
                 onChange={(val) => setRangeStart(val)}
-                className="w-full sm:w-44"
+                className="w-full sm:w-36"
               />
               <DatePickerInput
                 label="To"
                 value={rangeEnd}
                 onChange={(val) => setRangeEnd(val)}
-                className="w-full sm:w-44"
+                className="w-full sm:w-36"
               />
               <button
                 onClick={calculateRangeTotal}
