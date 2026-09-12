@@ -353,10 +353,10 @@ export default function NightBarSales() {
       historyStartDate && historyEndDate
         ? `${historyStartDate} to ${historyEndDate}`
         : historyStartDate
-        ? `From ${historyStartDate}`
-        : historyEndDate
-        ? `Up to ${historyEndDate}`
-        : "All Time";
+          ? `From ${historyStartDate}`
+          : historyEndDate
+            ? `Up to ${historyEndDate}`
+            : "All Time";
 
     const htmlContent = `
       <div class="container">
@@ -406,20 +406,7 @@ export default function NightBarSales() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <button
-            onClick={() => {
-              setActiveTab("history");
-              setShowDateSumModal(true);
-            }}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all shadow-lg hover:scale-[1.03] active:scale-[0.98]"
-            style={{
-              background: "linear-gradient(135deg, #c9a84c 0%, #e5c065 50%, #a07828 100%)",
-              color: "#0f1117",
-              boxShadow: "0 4px 15px rgba(201,168,76,0.35)",
-            }}
-          >
-            <span>🧮</span> Calculate Date Range Sum
-          </button>
+
 
           <button
             onClick={() => {
@@ -447,8 +434,8 @@ export default function NightBarSales() {
         <button
           onClick={() => setActiveTab("calculator")}
           className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all ${activeTab === "calculator"
-              ? "bg-[#c9a84c]/20 text-[#c9a84c] border border-[#c9a84c]/30 font-semibold"
-              : "text-[#7a8090] hover:text-white"
+            ? "bg-[#c9a84c]/20 text-[#c9a84c] border border-[#c9a84c]/30 font-semibold"
+            : "text-[#7a8090] hover:text-white"
             }`}
         >
           🧮 Daily Sales Calculator
@@ -456,8 +443,8 @@ export default function NightBarSales() {
         <button
           onClick={() => setActiveTab("history")}
           className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all ${activeTab === "history"
-              ? "bg-[#c9a84c]/20 text-[#c9a84c] border border-[#c9a84c]/30 font-semibold"
-              : "text-[#7a8090] hover:text-white"
+            ? "bg-[#c9a84c]/20 text-[#c9a84c] border border-[#c9a84c]/30 font-semibold"
+            : "text-[#7a8090] hover:text-white"
             }`}
         >
           📜 Night Sales History ({salesHistory.length})
@@ -887,10 +874,10 @@ export default function NightBarSales() {
                       {historyStartDate && historyEndDate
                         ? `${historyStartDate} to ${historyEndDate}`
                         : historyStartDate
-                        ? `From ${historyStartDate}`
-                        : historyEndDate
-                        ? `Up to ${historyEndDate}`
-                        : "All Records"}
+                          ? `From ${historyStartDate}`
+                          : historyEndDate
+                            ? `Up to ${historyEndDate}`
+                            : "All Records"}
                     </span>
                   </div>
                   <div className="text-right">
