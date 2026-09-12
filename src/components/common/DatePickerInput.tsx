@@ -20,6 +20,7 @@ export default function DatePickerInput({
   return (
     <input
       type={isFocused || value ? "date" : "text"}
+      inputMode="none"
       placeholder={label || "Select Date"}
       value={value}
       onChange={(e) => onChange(e.target.value)}
@@ -32,9 +33,12 @@ export default function DatePickerInput({
           try {
             (e.target as HTMLInputElement).showPicker();
           } catch {
-            // Ignore if restricted
+            // Ignore if restricte
           }
         }
+      }}
+      onBlur={(e) => {
+        if (!e.target.value) setIsFocused(false);
       }}
 
       className={`w-full min-h-[36px] px-3 py-1.5 rounded-lg border text-base md:text-sm font-medium bg-[var(--card)] text-foreground cursor-pointer transition-all hover:border-[#c9a84c]/50 focus:outline-none focus:border-[#c9a84c] ${className}`}
