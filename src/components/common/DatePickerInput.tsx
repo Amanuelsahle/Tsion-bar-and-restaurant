@@ -19,7 +19,7 @@ export default function DatePickerInput({
 
   return (
     <input
-      type={isFocused || value ? "date" : "text"}
+      type="date"
       placeholder={label || "Select Date"}
       value={value}
       onChange={(e) => onChange(e.target.value)}

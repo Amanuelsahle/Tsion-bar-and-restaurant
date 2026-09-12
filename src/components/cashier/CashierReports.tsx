@@ -13,9 +13,9 @@ export default function CashierReports() {
   const [selectedReport, setSelectedReport] =
     useState<CashierReportRecord | null>(null);
   const [cashierFilter, setCashierFilter] = useState("all");
-  const [singleDate, setSingleDate] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [singleDate, setSingleDate] = useState("yyyy-mm-dd");
+  const [startDate, setStartDate] = useState("yyyy-mm-dd");
+  const [endDate, setEndDate] = useState("yyyy-mm-dd");
   const [showDateFilter, setShowDateFilter] = useState(false);
   const detailsRef = useRef<HTMLDivElement | null>(null);
 
