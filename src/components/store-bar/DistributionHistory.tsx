@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { Item, Transaction } from "../../lib/types";
 import { BAR_MANAGERS } from "../../lib/types";
 import { openReceiptWindow } from "../../lib/receipt";
+import DatePickerInput from "../common/DatePickerInput";
 
 interface DistributionHistoryProps {
   transactions: Transaction[];
@@ -387,21 +388,11 @@ export default function DistributionHistory({
             </option>
           ))}
         </select>
-        <input
-          type="date"
+        <DatePickerInput
           value={filterDate}
-          onChange={(e) => setFilterDate(e.target.value)}
-          className="px-4 py-2.5 rounded-xl text-base md:text-sm outline-none"
-          style={{
-            backgroundColor: "var(--secondary)",
-            border: "1px solid var(--border)",
-            color: "var(--foreground)",
-            colorScheme: "dark",
-          }}
-          onFocus={(e) =>
-            (e.currentTarget.style.borderColor = "var(--primary)")
-          }
-          onBlur={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
+          placeholder="Filter by date..."
+          onChange={(val) => setFilterDate(val)}
+          className="min-w-44"
         />
         {(search || filterBarMan || filterDate) && (
           <button
@@ -453,46 +444,18 @@ export default function DistributionHistory({
         >
           <div className="flex flex-wrap gap-3 items-end justify-between">
             <div className="flex flex-wrap gap-3 items-end">
-              <div className="flex flex-col gap-1">
-                <label
-                  className="text-xs"
-                  style={{ color: "var(--muted-foreground)" }}
-                >
-                  From
-                </label>
-                <input
-                  type="date"
-                  value={rangeStart}
-                  onChange={(e) => setRangeStart(e.target.value)}
-                  className="px-4 py-2.5 rounded-xl text-sm outline-none"
-                  style={{
-                    backgroundColor: "var(--secondary)",
-                    border: "1px solid var(--border)",
-                    color: "var(--foreground)",
-                    colorScheme: "dark",
-                  }}
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <label
-                  className="text-xs"
-                  style={{ color: "var(--muted-foreground)" }}
-                >
-                  To
-                </label>
-                <input
-                  type="date"
-                  value={rangeEnd}
-                  onChange={(e) => setRangeEnd(e.target.value)}
-                  className="px-4 py-2.5 rounded-xl text-sm outline-none"
-                  style={{
-                    backgroundColor: "var(--secondary)",
-                    border: "1px solid var(--border)",
-                    color: "var(--foreground)",
-                    colorScheme: "dark",
-                  }}
-                />
-              </div>
+              <DatePickerInput
+                label="From"
+                value={rangeStart}
+                onChange={(val) => setRangeStart(val)}
+                className="w-full sm:w-44"
+              />
+              <DatePickerInput
+                label="To"
+                value={rangeEnd}
+                onChange={(val) => setRangeEnd(val)}
+                className="w-full sm:w-44"
+              />
               <button
                 onClick={calculateRangeTotal}
                 className="px-4 py-2.5 rounded-xl text-sm font-medium"

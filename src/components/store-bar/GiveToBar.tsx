@@ -3,6 +3,7 @@ import type { Item, Transaction } from "../../lib/types";
 import { BAR_MANAGERS } from "../../lib/types";
 import { openReceiptWindow } from "../../lib/receipt";
 import DistributionHistory from "./DistributionHistory";
+import DatePickerInput from "../common/DatePickerInput";
 
 interface GiveToBarProps {
   items: Item[];
@@ -374,38 +375,12 @@ export default function GiveToBar({ items, transactions = [], onSave }: GiveToBa
         >
         {/* Header fields */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="w-full space-y-1.5 overflow-hidden">
-            <label
-              className="text-xs font-medium"
-              style={{ color: "var(--muted-foreground)" }}
-            >
-              Distribution Date
-            </label>
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl text-sm outline-none min-w-0"
-              style={{
-                backgroundColor: "var(--secondary)",
-                border: "1px solid var(--border)",
-                color: "var(--foreground)",
-                colorScheme: "dark",
-                boxSizing: "border-box",
-                maxWidth: "100%",
-                display: "block",
-                WebkitAppearance: "none",
-                appearance: "none",
-                overflow: "hidden",
-              }}
-              onFocus={(e) =>
-                (e.currentTarget.style.borderColor = "var(--primary)")
-              }
-              onBlur={(e) =>
-                (e.currentTarget.style.borderColor = "var(--border)")
-              }
-            />
-          </div>
+          <DatePickerInput
+            label="Distribution Date"
+            value={date}
+            onChange={(val) => setDate(val)}
+            className="w-full"
+          />
           <div className="w-full space-y-1.5 overflow-hidden">
             <label
               className="text-xs font-medium"

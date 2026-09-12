@@ -13,6 +13,7 @@ import {
   type BarNightSaleRecord,
 } from "../../lib/supabase-data";
 import { openReceiptWindow } from "../../lib/receipt";
+import DatePickerInput from "../common/DatePickerInput";
 
 interface CalculationRow {
   id: string;
@@ -493,23 +494,12 @@ export default function NightBarSales() {
 
           {/* Form Header Info */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium" style={{ color: "var(--muted-foreground)" }}>
-                Sales Date
-              </label>
-              <input
-                type="date"
-                value={saleDate}
-                onChange={(e) => setSaleDate(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl text-base md:text-sm outline-none"
-                style={{
-                  backgroundColor: "var(--secondary)",
-                  border: "1px solid var(--border)",
-                  color: "var(--foreground)",
-                  colorScheme: "dark",
-                }}
-              />
-            </div>
+            <DatePickerInput
+              label="Sales Date"
+              value={saleDate}
+              onChange={(val) => setSaleDate(val)}
+              className="w-full"
+            />
             <div className="space-y-1.5">
               <label className="text-xs font-medium" style={{ color: "var(--muted-foreground)" }}>
                 Shift / Shift Name
@@ -837,43 +827,21 @@ export default function NightBarSales() {
                 <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
                   {/* Date Inputs & Presets */}
                   <div className="flex flex-wrap items-center gap-3">
-                    <div className="space-y-1">
-                      <label className="text-xs font-semibold text-[#7a8090] uppercase tracking-wider block">
-                        From Date
-                      </label>
-                      <input
-                        type="date"
-                        value={historyStartDate}
-                        onChange={(e) => setHistoryStartDate(e.target.value)}
-                        className="px-3.5 py-2 rounded-xl text-xs font-medium outline-none"
-                        style={{
-                          backgroundColor: "var(--card)",
-                          border: "1px solid var(--border)",
-                          color: "var(--foreground)",
-                          colorScheme: "dark",
-                        }}
-                      />
-                    </div>
+                    <DatePickerInput
+                      label="From Date"
+                      value={historyStartDate}
+                      onChange={(val) => setHistoryStartDate(val)}
+                      className="w-full sm:w-44"
+                    />
 
-                    <span className="text-[#7a8090] self-end pb-2 hidden sm:inline">→</span>
+                    <span className="text-[#7a8090] self-end pb-3 hidden sm:inline">→</span>
 
-                    <div className="space-y-1">
-                      <label className="text-xs font-semibold text-[#7a8090] uppercase tracking-wider block">
-                        To Date
-                      </label>
-                      <input
-                        type="date"
-                        value={historyEndDate}
-                        onChange={(e) => setHistoryEndDate(e.target.value)}
-                        className="px-3.5 py-2 rounded-xl text-xs font-medium outline-none"
-                        style={{
-                          backgroundColor: "var(--card)",
-                          border: "1px solid var(--border)",
-                          color: "var(--foreground)",
-                          colorScheme: "dark",
-                        }}
-                      />
-                    </div>
+                    <DatePickerInput
+                      label="To Date"
+                      value={historyEndDate}
+                      onChange={(val) => setHistoryEndDate(val)}
+                      className="w-full sm:w-44"
+                    />
 
                     {/* Quick Preset Buttons */}
                     <div className="flex items-center gap-1.5 self-end pb-0.5">

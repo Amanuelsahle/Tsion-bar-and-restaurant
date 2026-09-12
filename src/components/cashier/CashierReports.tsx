@@ -5,6 +5,7 @@ import {
   getCashierReports,
   type CashierReportRecord,
 } from "../../lib/supabase-data";
+import DatePickerInput from "../common/DatePickerInput";
 
 export default function CashierReports() {
   const [reports, setReports] = useState<CashierReportRecord[]>([]);
@@ -350,28 +351,17 @@ export default function CashierReports() {
           >
             <div className="flex flex-wrap items-center gap-4 justify-between">
               <div className="flex flex-wrap items-center gap-3">
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-[#7a8090] uppercase tracking-wider block">
-                    Select Date
-                  </label>
-                  <input
-                    type="date"
-                    placeholder="mm/dd/yyyy"
-                    value={singleDate}
-                    onChange={(e) => {
-                      setSingleDate(e.target.value);
-                      setStartDate("");
-                      setEndDate("");
-                    }}
-                    className="w-full min-h-[38px] px-3.5 py-2 rounded-xl text-xs font-medium outline-none"
-                    style={{
-                      backgroundColor: "var(--card)",
-                      border: "1px solid var(--border)",
-                      color: "var(--foreground)",
-                      colorScheme: "dark",
-                    }}
-                  />
-                </div>
+                <DatePickerInput
+                  label="Select Date"
+                  value={singleDate}
+                  placeholder="mm/dd/yyyy"
+                  onChange={(val) => {
+                    setSingleDate(val);
+                    setStartDate("");
+                    setEndDate("");
+                  }}
+                  className="w-full sm:w-52"
+                />
 
                 <div className="flex items-center gap-1.5 self-end pb-0.5">
                   <button
