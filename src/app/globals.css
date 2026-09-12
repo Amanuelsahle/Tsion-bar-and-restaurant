@@ -64,3 +64,18 @@ body {
 .font-display {
   font-family: "Playfair Display", Georgia, serif;
 }
+
+/* Fix iOS Safari Date Input Rendering */
+input[type="date"] {
+  min-height: 38px;
+  -webkit-appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  display: block;
+  background-size: contain;
+  opacity: 1;
+  filter: invert(0.8);
+}
+
