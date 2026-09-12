@@ -388,7 +388,7 @@ export default function DistributionHistory({
             </option>
           ))}
         </select>
-        <div className="flex gap-2 items-center">
+        <div className="flex gap-2 items-center my-2 sm:my-0">
           <label className="block text-sm font-medium mb-1 sm:hidden"
             style={{
               color: "var(--foreground)",
