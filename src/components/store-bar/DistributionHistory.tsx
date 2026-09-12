@@ -392,7 +392,7 @@ export default function DistributionHistory({
           value={filterDate}
 
           onChange={(val) => setFilterDate(val)}
-          className="w-full sm:w-36 h-full"
+          className="w-full sm:w-36"
         />
         {(search || filterBarMan || filterDate) && (
           <button
