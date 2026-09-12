@@ -276,12 +276,7 @@ export default function CashierReports() {
             </button>
 
             <div className="flex items-center gap-2">
-              <label
-                className="text-xs uppercase tracking-wider"
-                style={{ color: "var(--muted-foreground)" }}
-              >
-                Cashier:
-              </label>
+
               <select
                 value={cashierFilter}
                 onChange={(e) => setCashierFilter(e.target.value)}

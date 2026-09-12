@@ -748,10 +748,10 @@ export default function NightBarSales() {
                   type="button"
                   onClick={() => setShowDateFilter((prev) => !prev)}
                   className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all shadow-md flex items-center gap-1.5 shrink-0 ${showDateFilter
-                      ? "bg-[#c9a84c] text-[#0f1117] hover:bg-[#b8973b]"
-                      : (historyStartDate || historyEndDate)
-                        ? "bg-[#c9a84c]/20 text-[#c9a84c] border border-[#c9a84c]/40 hover:bg-[#c9a84c]/30"
-                        : "bg-[#1f2430] text-[#e8e6e1] border border-white/10 hover:bg-white/5"
+                    ? "bg-[#c9a84c] text-[#0f1117] hover:bg-[#b8973b]"
+                    : (historyStartDate || historyEndDate)
+                      ? "bg-[#c9a84c]/20 text-[#c9a84c] border border-[#c9a84c]/40 hover:bg-[#c9a84c]/30"
+                      : "bg-[#1f2430] text-[#e8e6e1] border border-white/10 hover:bg-white/5"
                     }`}
                 >
                   <span>📅</span>
@@ -832,12 +832,14 @@ export default function NightBarSales() {
                 <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
                   {/* Date Inputs & Presets */}
                   <div className="flex flex-wrap items-center gap-3">
+
                     <DatePickerInput
                       label="From Date"
                       value={historyStartDate}
                       onChange={(val) => setHistoryStartDate(val)}
                       className="w-full sm:w-36"
                     />
+
 
                     <span className="text-[#7a8090] self-end pb-2 hidden sm:inline">→</span>
 

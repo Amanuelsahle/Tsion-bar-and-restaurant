@@ -355,7 +355,7 @@ export default function DistributionHistory({
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-2">
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -374,7 +374,7 @@ export default function DistributionHistory({
         <select
           value={filterBarMan}
           onChange={(e) => setFilterBarMan(e.target.value)}
-          className="px-4 py-2.5 rounded-xl text-sm outline-none"
+          className="px-3 py-2.5 rounded-xl text-sm outline-none"
           style={{
             backgroundColor: "var(--secondary)",
             border: "1px solid var(--border)",
@@ -388,16 +388,16 @@ export default function DistributionHistory({
             </option>
           ))}
         </select>
-        <div className="flex gap-3 items-center">
+        <div className="flex gap-2 items-center">
           <label className="block text-sm font-medium mb-1 sm:hidden"
             style={{
               color: "var(--foreground)",
-            }}>Select Date</label>
+            }}>Date</label>
           <DatePickerInput
             value={filterDate}
 
             onChange={(val) => setFilterDate(val)}
-            className="w-10 sm:w-36 h-full"
+            className="w-1/2 sm:w-36 h-full"
           />
         </div>
 
