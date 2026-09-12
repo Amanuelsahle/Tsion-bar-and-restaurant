@@ -101,12 +101,12 @@ export default function GiveToBar({ items, transactions = [], onSave }: GiveToBa
             </thead>
             <tbody>
               ${saved.rows
-                .map((row) => {
-                  const item = items.find((it) => it.id === row.itemId);
-                  const total = item
-                    ? row.boxes * item.qtyPerBox * item.pricePerUnit
-                    : 0;
-                  return `
+          .map((row) => {
+            const item = items.find((it) => it.id === row.itemId);
+            const total = item
+              ? row.boxes * item.qtyPerBox * item.pricePerUnit
+              : 0;
+            return `
                   <tr>
                     <td>${item?.name ?? ""}</td>
                     <td>${row.boxes}</td>
@@ -115,8 +115,8 @@ export default function GiveToBar({ items, transactions = [], onSave }: GiveToBa
                     <td>${total.toLocaleString()} Birr</td>
                   </tr>
                 `;
-                })
-                .join("")}
+          })
+          .join("")}
             </tbody>
           </table>
           <div class="grand-total">
@@ -345,21 +345,19 @@ export default function GiveToBar({ items, transactions = [], onSave }: GiveToBa
       >
         <button
           onClick={() => setActiveTab("give")}
-          className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all ${
-            activeTab === "give"
-              ? "bg-[#c9a84c]/20 text-[#c9a84c] border border-[#c9a84c]/30 font-semibold"
-              : "text-[#7a8090] hover:text-white"
-          }`}
+          className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all ${activeTab === "give"
+            ? "bg-[#c9a84c]/20 text-[#c9a84c] border border-[#c9a84c]/30 font-semibold"
+            : "text-[#7a8090] hover:text-white"
+            }`}
         >
           ↗ Give Items to Bar
         </button>
         <button
           onClick={() => setActiveTab("history")}
-          className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all ${
-            activeTab === "history"
-              ? "bg-[#c9a84c]/20 text-[#c9a84c] border border-[#c9a84c]/30 font-semibold"
-              : "text-[#7a8090] hover:text-white"
-          }`}
+          className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all ${activeTab === "history"
+            ? "bg-[#c9a84c]/20 text-[#c9a84c] border border-[#c9a84c]/30 font-semibold"
+            : "text-[#7a8090] hover:text-white"
+            }`}
         >
           📜 Distribution History ({transactions.length})
         </button>
@@ -373,254 +371,260 @@ export default function GiveToBar({ items, transactions = [], onSave }: GiveToBa
             border: "1px solid var(--border)",
           }}
         >
-        {/* Header fields */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <DatePickerInput
-            label="Distribution Date"
-            value={date}
-            onChange={(val) => setDate(val)}
-            className="w-full"
-          />
-          <div className="w-full space-y-1.5 overflow-hidden">
-            <label
-              className="text-xs font-medium"
-              style={{ color: "var(--muted-foreground)" }}
-            >
-              Bar Manager
-            </label>
-            <select
-              value={barMan}
-              onChange={(e) => setBarMan(e.target.value)}
-              required
-              className="w-full px-4 py-2.5 rounded-xl text-sm outline-none min-w-0"
+          {/* Header fields */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="w-full space-y-1.5 overflow-hidden">
+              <label
+                className="text-xs font-medium"
+                style={{ color: "var(--muted-foreground)" }}
+              >Distribution Date</label>
+              <DatePickerInput
+                label=""
+                value={date}
+                onChange={(val) => setDate(val)}
+                className="w-full"
+              />
+            </div>
+            <div className="w-full space-y-1.5 overflow-hidden">
+              <label
+                className="text-xs font-medium"
+                style={{ color: "var(--muted-foreground)" }}
+              >
+                Bar Manager
+              </label>
+              <select
+                value={barMan}
+                onChange={(e) => setBarMan(e.target.value)}
+                required
+                className="w-full px-4 py-2.5 rounded-xl text-sm outline-none min-w-0"
+                style={{
+                  backgroundColor: "var(--secondary)",
+                  border: "1px solid var(--border)",
+                  color: "var(--foreground)",
+                  boxSizing: "border-box",
+                  maxWidth: "100%",
+                  display: "block",
+                  WebkitAppearance: "none",
+                  appearance: "none",
+                  overflow: "hidden",
+                }}
+                onFocus={(e) =>
+                  (e.currentTarget.style.borderColor = "var(--primary)")
+                }
+                onBlur={(e) =>
+                  (e.currentTarget.style.borderColor = "var(--border)")
+                }
+              >
+                <option value="">— Select Bar Manager —</option>
+                {BAR_MANAGERS.map((bm) => (
+                  <option key={bm} value={bm}>
+                    {bm}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Distribution table */}
+          <div
+            className="overflow-x-auto rounded-xl"
+            style={{ border: "1px solid var(--border)" }}
+          >
+            <table className="w-full text-sm">
+              <thead>
+                <tr
+                  style={{
+                    backgroundColor: "rgba(255,255,255,0.02)",
+                    borderBottom: "1px solid var(--border)",
+                  }}
+                >
+                  <th
+                    className="px-4 py-3.5 text-left text-xs font-medium uppercase tracking-wider"
+                    style={{ color: "var(--muted-foreground)" }}
+                  >
+                    Item
+                  </th>
+                  <th
+                    className="px-4 py-3.5 text-left text-xs font-medium uppercase tracking-wider"
+                    style={{ color: "var(--muted-foreground)" }}
+                  >
+                    Boxes Given
+                  </th>
+                  <th
+                    className="px-4 py-3.5 text-left text-xs font-medium uppercase tracking-wider"
+                    style={{ color: "var(--muted-foreground)" }}
+                  >
+                    Qty/Box
+                  </th>
+                  <th
+                    className="px-4 py-3.5 text-left text-xs font-medium uppercase tracking-wider"
+                    style={{ color: "var(--muted-foreground)" }}
+                  >
+                    Price/Unit (Birr)
+                  </th>
+                  <th
+                    className="px-4 py-3.5 text-left text-xs font-medium uppercase tracking-wider"
+                    style={{ color: "var(--muted-foreground)" }}
+                  >
+                    Total (Birr)
+                  </th>
+                  <th className="px-4 py-3.5" />
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row, i) => {
+                  const item = items.find((it) => it.id === row.itemId);
+                  const total = calcRowTotal(row);
+                  return (
+                    <tr
+                      key={i}
+                      style={{ borderBottom: "1px solid var(--border)" }}
+                    >
+                      <td className="px-4 py-3">
+                        <select
+                          value={row.itemId}
+                          onChange={(e) => updateRow(i, "itemId", e.target.value)}
+                          className="w-full px-3 py-2 rounded-lg text-sm outline-none"
+                          style={{
+                            backgroundColor: "var(--secondary)",
+                            border: "1px solid var(--border)",
+                            color: "var(--foreground)",
+                            minWidth: window.innerWidth < 768 ? 120 : 180,
+                          }}
+                          onFocus={(e) =>
+                            (e.currentTarget.style.borderColor = "var(--primary)")
+                          }
+                          onBlur={(e) =>
+                            (e.currentTarget.style.borderColor = "var(--border)")
+                          }
+                        >
+                          <option value="">— Select —</option>
+                          {items.map((it) => (
+                            <option key={it.id} value={it.id}>
+                              {it.name} ({it.currentBoxes} boxes)
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                      <td className="px-4 py-3">
+                        <input
+                          type="number"
+                          min={0}
+                          value={row.boxes || ""}
+                          onChange={(e) => updateRow(i, "boxes", +e.target.value)}
+                          className="w-24 px-3 py-2 rounded-lg text-base md:text-sm outline-none"
+                          style={{
+                            backgroundColor: "var(--secondary)",
+                            border: "1px solid var(--border)",
+                            color: "var(--foreground)",
+                          }}
+                          onFocus={(e) =>
+                            (e.currentTarget.style.borderColor = "var(--primary)")
+                          }
+                          onBlur={(e) =>
+                            (e.currentTarget.style.borderColor = "var(--border)")
+                          }
+                        />
+                      </td>
+                      <td
+                        className="px-4 py-3 text-sm"
+                        style={{ color: "var(--muted-foreground)" }}
+                      >
+                        {item?.qtyPerBox ?? "—"}
+                      </td>
+                      <td
+                        className="px-4 py-3 text-sm"
+                        style={{ color: "var(--muted-foreground)" }}
+                      >
+                        {item?.pricePerUnit ?? "—"}
+                      </td>
+                      <td
+                        className="px-4 py-3 font-semibold"
+                        style={{
+                          color:
+                            total > 0
+                              ? "var(--primary)"
+                              : "var(--muted-foreground)",
+                        }}
+                      >
+                        {total > 0 ? `${total.toLocaleString()} Birr` : "—"}
+                      </td>
+                      <td className="px-4 py-3">
+                        {rows.length > 1 && (
+                          <button
+                            onClick={() => removeRow(i)}
+                            className="text-xs px-2 py-1 rounded-lg"
+                            style={{
+                              color: "#f87171",
+                              backgroundColor: "rgba(239,68,68,0.08)",
+                            }}
+                          >
+                            ×
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <button
+              onClick={addRow}
+              className="text-sm px-4 py-2.5 rounded-xl font-medium transition-all"
               style={{
                 backgroundColor: "var(--secondary)",
-                border: "1px solid var(--border)",
                 color: "var(--foreground)",
-                boxSizing: "border-box",
-                maxWidth: "100%",
-                display: "block",
-                WebkitAppearance: "none",
-                appearance: "none",
-                overflow: "hidden",
+                border: "1px solid var(--border)",
               }}
-              onFocus={(e) =>
-                (e.currentTarget.style.borderColor = "var(--primary)")
-              }
-              onBlur={(e) =>
-                (e.currentTarget.style.borderColor = "var(--border)")
-              }
             >
-              <option value="">— Select Bar Manager —</option>
-              {BAR_MANAGERS.map((bm) => (
-                <option key={bm} value={bm}>
-                  {bm}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {/* Distribution table */}
-        <div
-          className="overflow-x-auto rounded-xl"
-          style={{ border: "1px solid var(--border)" }}
-        >
-          <table className="w-full text-sm">
-            <thead>
-              <tr
-                style={{
-                  backgroundColor: "rgba(255,255,255,0.02)",
-                  borderBottom: "1px solid var(--border)",
-                }}
+              + Add Row
+            </button>
+            <div className="text-right">
+              <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
+                Grand Total
+              </p>
+              <p
+                className="text-3xl font-bold font-display"
+                style={{ color: "var(--primary)" }}
               >
-                <th
-                  className="px-4 py-3.5 text-left text-xs font-medium uppercase tracking-wider"
-                  style={{ color: "var(--muted-foreground)" }}
-                >
-                  Item
-                </th>
-                <th
-                  className="px-4 py-3.5 text-left text-xs font-medium uppercase tracking-wider"
-                  style={{ color: "var(--muted-foreground)" }}
-                >
-                  Boxes Given
-                </th>
-                <th
-                  className="px-4 py-3.5 text-left text-xs font-medium uppercase tracking-wider"
-                  style={{ color: "var(--muted-foreground)" }}
-                >
-                  Qty/Box
-                </th>
-                <th
-                  className="px-4 py-3.5 text-left text-xs font-medium uppercase tracking-wider"
-                  style={{ color: "var(--muted-foreground)" }}
-                >
-                  Price/Unit (Birr)
-                </th>
-                <th
-                  className="px-4 py-3.5 text-left text-xs font-medium uppercase tracking-wider"
-                  style={{ color: "var(--muted-foreground)" }}
-                >
-                  Total (Birr)
-                </th>
-                <th className="px-4 py-3.5" />
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row, i) => {
-                const item = items.find((it) => it.id === row.itemId);
-                const total = calcRowTotal(row);
-                return (
-                  <tr
-                    key={i}
-                    style={{ borderBottom: "1px solid var(--border)" }}
-                  >
-                    <td className="px-4 py-3">
-                      <select
-                        value={row.itemId}
-                        onChange={(e) => updateRow(i, "itemId", e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg text-sm outline-none"
-                        style={{
-                          backgroundColor: "var(--secondary)",
-                          border: "1px solid var(--border)",
-                          color: "var(--foreground)",
-                          minWidth: window.innerWidth < 768 ? 120 : 180,
-                        }}
-                        onFocus={(e) =>
-                          (e.currentTarget.style.borderColor = "var(--primary)")
-                        }
-                        onBlur={(e) =>
-                          (e.currentTarget.style.borderColor = "var(--border)")
-                        }
-                      >
-                        <option value="">— Select —</option>
-                        {items.map((it) => (
-                          <option key={it.id} value={it.id}>
-                            {it.name} ({it.currentBoxes} boxes)
-                          </option>
-                        ))}
-                      </select>
-                    </td>
-                    <td className="px-4 py-3">
-                      <input
-                        type="number"
-                        min={0}
-                        value={row.boxes || ""}
-                        onChange={(e) => updateRow(i, "boxes", +e.target.value)}
-                        className="w-24 px-3 py-2 rounded-lg text-base md:text-sm outline-none"
-                        style={{
-                          backgroundColor: "var(--secondary)",
-                          border: "1px solid var(--border)",
-                          color: "var(--foreground)",
-                        }}
-                        onFocus={(e) =>
-                          (e.currentTarget.style.borderColor = "var(--primary)")
-                        }
-                        onBlur={(e) =>
-                          (e.currentTarget.style.borderColor = "var(--border)")
-                        }
-                      />
-                    </td>
-                    <td
-                      className="px-4 py-3 text-sm"
-                      style={{ color: "var(--muted-foreground)" }}
-                    >
-                      {item?.qtyPerBox ?? "—"}
-                    </td>
-                    <td
-                      className="px-4 py-3 text-sm"
-                      style={{ color: "var(--muted-foreground)" }}
-                    >
-                      {item?.pricePerUnit ?? "—"}
-                    </td>
-                    <td
-                      className="px-4 py-3 font-semibold"
-                      style={{
-                        color:
-                          total > 0
-                            ? "var(--primary)"
-                            : "var(--muted-foreground)",
-                      }}
-                    >
-                      {total > 0 ? `${total.toLocaleString()} Birr` : "—"}
-                    </td>
-                    <td className="px-4 py-3">
-                      {rows.length > 1 && (
-                        <button
-                          onClick={() => removeRow(i)}
-                          className="text-xs px-2 py-1 rounded-lg"
-                          style={{
-                            color: "#f87171",
-                            backgroundColor: "rgba(239,68,68,0.08)",
-                          }}
-                        >
-                          ×
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                {grandTotal.toLocaleString()} Birr
+              </p>
+            </div>
+          </div>
 
-        <div className="flex items-center justify-between">
-          <button
-            onClick={addRow}
-            className="text-sm px-4 py-2.5 rounded-xl font-medium transition-all"
-            style={{
-              backgroundColor: "var(--secondary)",
-              color: "var(--foreground)",
-              border: "1px solid var(--border)",
-            }}
-          >
-            + Add Row
-          </button>
-          <div className="text-right">
-            <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
-              Grand Total
-            </p>
-            <p
-              className="text-3xl font-bold font-display"
-              style={{ color: "var(--primary)" }}
+          {error ? (
+            <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+              {error}
+            </div>
+          ) : null}
+
+          <div className="flex justify-end pt-2">
+            <button
+              onClick={handleSave}
+              disabled={!barMan || validRows.length === 0 || submitting}
+              className="px-8 py-3 rounded-xl text-sm font-semibold transition-all"
+              style={{
+                background:
+                  barMan && validRows.length > 0 && !submitting
+                    ? "linear-gradient(135deg, #c9a84c, #a07828)"
+                    : "var(--muted)",
+                color:
+                  barMan && validRows.length > 0 && !submitting
+                    ? "#0f1117"
+                    : "var(--muted-foreground)",
+                cursor:
+                  barMan && validRows.length > 0 && !submitting
+                    ? "pointer"
+                    : "not-allowed",
+              }}
             >
-              {grandTotal.toLocaleString()} Birr
-            </p>
+              {submitting ? "Saving..." : "Save & Generate Receipt"}
+            </button>
           </div>
         </div>
-
-        {error ? (
-          <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-            {error}
-          </div>
-        ) : null}
-
-        <div className="flex justify-end pt-2">
-          <button
-            onClick={handleSave}
-            disabled={!barMan || validRows.length === 0 || submitting}
-            className="px-8 py-3 rounded-xl text-sm font-semibold transition-all"
-            style={{
-              background:
-                barMan && validRows.length > 0 && !submitting
-                  ? "linear-gradient(135deg, #c9a84c, #a07828)"
-                  : "var(--muted)",
-              color:
-                barMan && validRows.length > 0 && !submitting
-                  ? "#0f1117"
-                  : "var(--muted-foreground)",
-              cursor:
-                barMan && validRows.length > 0 && !submitting
-                  ? "pointer"
-                  : "not-allowed",
-            }}
-          >
-            {submitting ? "Saving..." : "Save & Generate Receipt"}
-          </button>
-        </div>
-      </div>
       )}
 
       {activeTab === "history" && (

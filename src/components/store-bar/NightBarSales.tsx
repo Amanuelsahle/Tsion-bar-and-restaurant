@@ -494,12 +494,18 @@ export default function NightBarSales() {
 
           {/* Form Header Info */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <DatePickerInput
-              label="Sales Date"
-              value={saleDate}
-              onChange={(val) => setSaleDate(val)}
-              className="w-full"
-            />
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium" style={{ color: "var(--muted-foreground)" }}>
+                Sales Date
+              </label>
+
+              <DatePickerInput
+                label=""
+                value={saleDate}
+                onChange={(val) => setSaleDate(val)}
+                className="w-full"
+              />
+            </div>
             <div className="space-y-1.5">
               <label className="text-xs font-medium" style={{ color: "var(--muted-foreground)" }}>
                 Shift / Shift Name
@@ -741,13 +747,12 @@ export default function NightBarSales() {
                 <button
                   type="button"
                   onClick={() => setShowDateFilter((prev) => !prev)}
-                  className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all shadow-md flex items-center gap-1.5 shrink-0 ${
-                    showDateFilter
+                  className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all shadow-md flex items-center gap-1.5 shrink-0 ${showDateFilter
                       ? "bg-[#c9a84c] text-[#0f1117] hover:bg-[#b8973b]"
                       : (historyStartDate || historyEndDate)
-                      ? "bg-[#c9a84c]/20 text-[#c9a84c] border border-[#c9a84c]/40 hover:bg-[#c9a84c]/30"
-                      : "bg-[#1f2430] text-[#e8e6e1] border border-white/10 hover:bg-white/5"
-                  }`}
+                        ? "bg-[#c9a84c]/20 text-[#c9a84c] border border-[#c9a84c]/40 hover:bg-[#c9a84c]/30"
+                        : "bg-[#1f2430] text-[#e8e6e1] border border-white/10 hover:bg-white/5"
+                    }`}
                 >
                   <span>📅</span>
                   <span>{showDateFilter ? "Hide Date Filter" : "Filter by Date"}</span>
@@ -789,8 +794,8 @@ export default function NightBarSales() {
                     {historyStartDate && historyEndDate
                       ? `${historyStartDate} to ${historyEndDate}`
                       : historyStartDate
-                      ? `From ${historyStartDate}`
-                      : `Up to ${historyEndDate}`}
+                        ? `From ${historyStartDate}`
+                        : `Up to ${historyEndDate}`}
                   </span>
                   <span className="text-[#7a8090]">
                     ({filteredHistory.length} record{filteredHistory.length === 1 ? "" : "s"} · Total: {rangeGrandTotal.toLocaleString()} Birr)

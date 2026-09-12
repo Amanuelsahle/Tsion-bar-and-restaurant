@@ -354,7 +354,7 @@ export default function CashierReports() {
                 <DatePickerInput
                   label="Select Date"
                   value={singleDate}
-                  placeholder="mm/dd/yyyy"
+
                   onChange={(val) => {
                     setSingleDate(val);
                     setStartDate("");

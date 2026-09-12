@@ -120,12 +120,12 @@ export default function DistributionHistory({
             </thead>
             <tbody>
               ${detail.rows
-                .map((row) => {
-                  const item = items.find((it) => it.id === row.itemId);
-                  const qtyPerBox = row.qtyPerBox ?? item?.qtyPerBox ?? 0;
-                  const unitPrice = row.unitPrice ?? item?.pricePerUnit ?? 0;
-                  const total = row.total ?? qtyPerBox * unitPrice * row.boxes;
-                  return `
+          .map((row) => {
+            const item = items.find((it) => it.id === row.itemId);
+            const qtyPerBox = row.qtyPerBox ?? item?.qtyPerBox ?? 0;
+            const unitPrice = row.unitPrice ?? item?.pricePerUnit ?? 0;
+            const total = row.total ?? qtyPerBox * unitPrice * row.boxes;
+            return `
                   <tr>
                     <td>${item?.name ?? row.itemId}</td>
                     <td>${row.boxes}</td>
@@ -134,8 +134,8 @@ export default function DistributionHistory({
                     <td>${total.toLocaleString()} Birr</td>
                   </tr>
                 `;
-                })
-                .join("")}
+          })
+          .join("")}
             </tbody>
           </table>
           <div class="grand-total">
@@ -390,7 +390,7 @@ export default function DistributionHistory({
         </select>
         <DatePickerInput
           value={filterDate}
-          placeholder="Filter by date..."
+
           onChange={(val) => setFilterDate(val)}
           className="w-full sm:w-36"
         />
@@ -561,8 +561,8 @@ export default function DistributionHistory({
                     backgroundColor: "var(--card)",
                   }}
                   onMouseEnter={(e) =>
-                    (e.currentTarget.style.backgroundColor =
-                      "rgba(255,255,255,0.02)")
+                  (e.currentTarget.style.backgroundColor =
+                    "rgba(255,255,255,0.02)")
                   }
                   onMouseLeave={(e) =>
                     (e.currentTarget.style.backgroundColor = "var(--card)")
