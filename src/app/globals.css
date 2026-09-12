@@ -65,17 +65,38 @@ body {
   font-family: "Playfair Display", Georgia, serif;
 }
 
-/* Fix iOS Safari Date Input Rendering */
+/* Fix iOS Mobile Safari & WebKit Date Input Rendering */
 input[type="date"] {
-  min-height: 38px;
-  -webkit-appearance: textfield;
-  -moz-appearance: textfield;
+  min-height: 42px;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  color: var(--foreground);
+  color-scheme: dark;
+  position: relative;
+  padding-right: 36px !important;
 }
 
-input[type="date"]::-webkit-calendar-picker-indicator {
-  display: block;
-  background-size: contain;
-  opacity: 1;
-  filter: invert(0.8);
+/* Ensure date text value is visible and left-aligned in iOS Safari */
+input[type="date"]::-webkit-date-and-time-value {
+  text-align: left;
+  min-height: 1.4em;
+  color: var(--foreground);
 }
+
+/* Ensure calendar picker icon is always visible on iOS and Android */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  display: block !important;
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  opacity: 0.85;
+  filter: invert(0.85);
+  cursor: pointer;
+  pointer-events: auto;
+}
+
 
