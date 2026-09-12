@@ -54,6 +54,7 @@ export default function NightBarSales() {
   const [historyStartDate, setHistoryStartDate] = useState("");
   const [historyEndDate, setHistoryEndDate] = useState("");
   const [showDateSumModal, setShowDateSumModal] = useState(false);
+  const [showDateFilter, setShowDateFilter] = useState(false);
 
   const setDatePreset = (preset: "today" | "thisWeek" | "thisMonth" | "clear") => {
     const today = new Date();
@@ -746,7 +747,24 @@ export default function NightBarSales() {
                   Calculate sum of grand totals between specific dates or view all history.
                 </p>
               </div>
-              <div className="flex items-center gap-2 w-full sm:w-auto">
+              <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
+                <button
+                  type="button"
+                  onClick={() => setShowDateFilter((prev) => !prev)}
+                  className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all shadow-md flex items-center gap-1.5 shrink-0 ${
+                    showDateFilter
+                      ? "bg-[#c9a84c] text-[#0f1117] hover:bg-[#b8973b]"
+                      : (historyStartDate || historyEndDate)
+                      ? "bg-[#c9a84c]/20 text-[#c9a84c] border border-[#c9a84c]/40 hover:bg-[#c9a84c]/30"
+                      : "bg-[#1f2430] text-[#e8e6e1] border border-white/10 hover:bg-white/5"
+                  }`}
+                >
+                  <span>📅</span>
+                  <span>{showDateFilter ? "Hide Date Filter" : "Filter by Date"}</span>
+                  {(historyStartDate || historyEndDate) && (
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse ml-0.5" />
+                  )}
+                </button>
                 <button
                   type="button"
                   onClick={() => setShowDateSumModal(true)}
@@ -772,122 +790,159 @@ export default function NightBarSales() {
               </div>
             </div>
 
+            {/* Active Date Filter Summary Bar when filter box is closed */}
+            {!showDateFilter && (historyStartDate || historyEndDate) && (
+              <div className="px-4 py-2.5 rounded-xl flex items-center justify-between text-xs bg-[#c9a84c]/10 border border-[#c9a84c]/30 text-[#e8e6e1]">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-[#c9a84c] font-bold">📅 Filter Applied:</span>
+                  <span className="font-semibold">
+                    {historyStartDate && historyEndDate
+                      ? `${historyStartDate} to ${historyEndDate}`
+                      : historyStartDate
+                      ? `From ${historyStartDate}`
+                      : `Up to ${historyEndDate}`}
+                  </span>
+                  <span className="text-[#7a8090]">
+                    ({filteredHistory.length} record{filteredHistory.length === 1 ? "" : "s"} · Total: {rangeGrandTotal.toLocaleString()} Birr)
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setShowDateFilter(true)}
+                    className="text-[#c9a84c] hover:underline text-xs font-semibold"
+                  >
+                    Edit Filter
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDatePreset("clear")}
+                    className="text-red-400 hover:underline text-xs font-semibold"
+                  >
+                    Clear Filter
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Date Range Calculator Control Box */}
-            <div
-              className="p-4 rounded-2xl space-y-4"
-              style={{
-                backgroundColor: "var(--secondary)",
-                border: "1px solid var(--border)",
-              }}
-            >
-              <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
-                {/* Date Inputs & Presets */}
-                <div className="flex flex-wrap items-center gap-3">
-                  <div className="space-y-1">
-                    <label className="text-xs font-semibold text-[#7a8090] uppercase tracking-wider block">
-                      From Date
-                    </label>
-                    <input
-                      type="date"
-                      value={historyStartDate}
-                      onChange={(e) => setHistoryStartDate(e.target.value)}
-                      className="px-3.5 py-2 rounded-xl text-xs font-medium outline-none"
-                      style={{
-                        backgroundColor: "var(--card)",
-                        border: "1px solid var(--border)",
-                        color: "var(--foreground)",
-                        colorScheme: "dark",
-                      }}
-                    />
-                  </div>
+            {showDateFilter && (
+              <div
+                className="p-4 rounded-2xl space-y-4 transition-all duration-200"
+                style={{
+                  backgroundColor: "var(--secondary)",
+                  border: "1px solid var(--border)",
+                }}
+              >
+                <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+                  {/* Date Inputs & Presets */}
+                  <div className="flex flex-wrap items-center gap-3">
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-[#7a8090] uppercase tracking-wider block">
+                        From Date
+                      </label>
+                      <input
+                        type="date"
+                        value={historyStartDate}
+                        onChange={(e) => setHistoryStartDate(e.target.value)}
+                        className="px-3.5 py-2 rounded-xl text-xs font-medium outline-none"
+                        style={{
+                          backgroundColor: "var(--card)",
+                          border: "1px solid var(--border)",
+                          color: "var(--foreground)",
+                          colorScheme: "dark",
+                        }}
+                      />
+                    </div>
 
-                  <span className="text-[#7a8090] self-end pb-2 hidden sm:inline">→</span>
+                    <span className="text-[#7a8090] self-end pb-2 hidden sm:inline">→</span>
 
-                  <div className="space-y-1">
-                    <label className="text-xs font-semibold text-[#7a8090] uppercase tracking-wider block">
-                      To Date
-                    </label>
-                    <input
-                      type="date"
-                      value={historyEndDate}
-                      onChange={(e) => setHistoryEndDate(e.target.value)}
-                      className="px-3.5 py-2 rounded-xl text-xs font-medium outline-none"
-                      style={{
-                        backgroundColor: "var(--card)",
-                        border: "1px solid var(--border)",
-                        color: "var(--foreground)",
-                        colorScheme: "dark",
-                      }}
-                    />
-                  </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-[#7a8090] uppercase tracking-wider block">
+                        To Date
+                      </label>
+                      <input
+                        type="date"
+                        value={historyEndDate}
+                        onChange={(e) => setHistoryEndDate(e.target.value)}
+                        className="px-3.5 py-2 rounded-xl text-xs font-medium outline-none"
+                        style={{
+                          backgroundColor: "var(--card)",
+                          border: "1px solid var(--border)",
+                          color: "var(--foreground)",
+                          colorScheme: "dark",
+                        }}
+                      />
+                    </div>
 
-                  {/* Quick Preset Buttons */}
-                  <div className="flex items-center gap-1.5 self-end pb-0.5">
-                    <button
-                      type="button"
-                      onClick={() => setDatePreset("today")}
-                      className="px-2.5 py-1.5 rounded-lg text-xs font-medium hover:bg-white/5 transition-all text-[#e8e6e1] border border-white/10"
-                    >
-                      Today
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setDatePreset("thisWeek")}
-                      className="px-2.5 py-1.5 rounded-lg text-xs font-medium hover:bg-white/5 transition-all text-[#e8e6e1] border border-white/10"
-                    >
-                      This Week
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setDatePreset("thisMonth")}
-                      className="px-2.5 py-1.5 rounded-lg text-xs font-medium hover:bg-white/5 transition-all text-[#e8e6e1] border border-white/10"
-                    >
-                      This Month
-                    </button>
-                    {(historyStartDate || historyEndDate) && (
+                    {/* Quick Preset Buttons */}
+                    <div className="flex items-center gap-1.5 self-end pb-0.5">
                       <button
                         type="button"
-                        onClick={() => setDatePreset("clear")}
-                        className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-red-400 hover:bg-red-500/10 border border-red-500/20"
+                        onClick={() => setDatePreset("today")}
+                        className="px-2.5 py-1.5 rounded-lg text-xs font-medium hover:bg-white/5 transition-all text-[#e8e6e1] border border-white/10"
                       >
-                        Reset
+                        Today
                       </button>
-                    )}
+                      <button
+                        type="button"
+                        onClick={() => setDatePreset("thisWeek")}
+                        className="px-2.5 py-1.5 rounded-lg text-xs font-medium hover:bg-white/5 transition-all text-[#e8e6e1] border border-white/10"
+                      >
+                        This Week
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDatePreset("thisMonth")}
+                        className="px-2.5 py-1.5 rounded-lg text-xs font-medium hover:bg-white/5 transition-all text-[#e8e6e1] border border-white/10"
+                      >
+                        This Month
+                      </button>
+                      {(historyStartDate || historyEndDate) && (
+                        <button
+                          type="button"
+                          onClick={() => setDatePreset("clear")}
+                          className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-red-400 hover:bg-red-500/10 border border-red-500/20"
+                        >
+                          Reset
+                        </button>
+                      )}
+                    </div>
                   </div>
-                </div>
 
-                {/* Grand Total Calculation Summary Badge */}
-                <div
-                  className="px-5 py-3 rounded-xl flex items-center justify-between gap-6 shrink-0"
-                  style={{
-                    background: "linear-gradient(135deg, rgba(201,168,76,0.15) 0%, rgba(201,168,76,0.05) 100%)",
-                    border: "1px solid rgba(201,168,76,0.3)",
-                  }}
-                >
-                  <div>
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-[#7a8090] block">
-                      {historyStartDate || historyEndDate
-                        ? `Sum of Grand Totals (${filteredHistory.length} record${filteredHistory.length === 1 ? "" : "s"})`
-                        : `Total Sales Sum (${filteredHistory.length} record${filteredHistory.length === 1 ? "" : "s"})`}
-                    </span>
-                    <span className="text-xs text-[#e8e6e1]/70">
-                      {historyStartDate && historyEndDate
-                        ? `${historyStartDate} to ${historyEndDate}`
-                        : historyStartDate
-                          ? `From ${historyStartDate}`
-                          : historyEndDate
-                            ? `Up to ${historyEndDate}`
-                            : "All Records"}
-                    </span>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-2xl font-bold font-display text-[#c9a84c]">
-                      {rangeGrandTotal.toLocaleString()} <span className="text-xs font-normal">Birr</span>
-                    </span>
+                  {/* Grand Total Calculation Summary Badge */}
+                  <div
+                    className="px-5 py-3 rounded-xl flex items-center justify-between gap-6 shrink-0"
+                    style={{
+                      background: "linear-gradient(135deg, rgba(201,168,76,0.15) 0%, rgba(201,168,76,0.05) 100%)",
+                      border: "1px solid rgba(201,168,76,0.3)",
+                    }}
+                  >
+                    <div>
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-[#7a8090] block">
+                        {historyStartDate || historyEndDate
+                          ? `Sum of Grand Totals (${filteredHistory.length} record${filteredHistory.length === 1 ? "" : "s"})`
+                          : `Total Sales Sum (${filteredHistory.length} record${filteredHistory.length === 1 ? "" : "s"})`}
+                      </span>
+                      <span className="text-xs text-[#e8e6e1]/70">
+                        {historyStartDate && historyEndDate
+                          ? `${historyStartDate} to ${historyEndDate}`
+                          : historyStartDate
+                            ? `From ${historyStartDate}`
+                            : historyEndDate
+                              ? `Up to ${historyEndDate}`
+                              : "All Records"}
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-2xl font-bold font-display text-[#c9a84c]">
+                        {rangeGrandTotal.toLocaleString()} <span className="text-xs font-normal">Birr</span>
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
 
           {filteredHistory.length === 0 ? (

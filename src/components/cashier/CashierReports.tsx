@@ -12,7 +12,49 @@ export default function CashierReports() {
   const [selectedReport, setSelectedReport] =
     useState<CashierReportRecord | null>(null);
   const [cashierFilter, setCashierFilter] = useState("all");
+  const [singleDate, setSingleDate] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [showDateFilter, setShowDateFilter] = useState(false);
   const detailsRef = useRef<HTMLDivElement | null>(null);
+
+  const setDatePreset = (preset: "today" | "thisWeek" | "thisMonth" | "clear") => {
+    const today = new Date();
+    const todayIso = today.toISOString().split("T")[0];
+
+    if (preset === "clear") {
+      setSingleDate("");
+      setStartDate("");
+      setEndDate("");
+      return;
+    }
+
+    if (preset === "today") {
+      setSingleDate(todayIso);
+      setStartDate("");
+      setEndDate("");
+      return;
+    }
+
+    if (preset === "thisWeek") {
+      setSingleDate("");
+      const now = new Date();
+      const day = now.getDay();
+      const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+      const monday = new Date(now.setDate(diff));
+      setStartDate(monday.toISOString().split("T")[0]);
+      setEndDate(todayIso);
+      return;
+    }
+
+    if (preset === "thisMonth") {
+      setSingleDate("");
+      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+      setStartDate(firstDay.toISOString().split("T")[0]);
+      setEndDate(todayIso);
+      return;
+    }
+  };
 
   useEffect(() => {
     const loadReports = async () => {
@@ -35,9 +77,22 @@ export default function CashierReports() {
   }, [reports]);
 
   const filteredReports = useMemo(() => {
-    if (cashierFilter === "all") return reports;
-    return reports.filter((r) => r.cashier_name === cashierFilter);
-  }, [reports, cashierFilter]);
+    return reports.filter((r) => {
+      if (cashierFilter !== "all" && r.cashier_name !== cashierFilter) {
+        return false;
+      }
+      if (r.created_at) {
+        const reportDate = r.created_at.split("T")[0];
+        if (singleDate) {
+          if (reportDate !== singleDate) return false;
+        } else {
+          if (startDate && reportDate < startDate) return false;
+          if (endDate && reportDate > endDate) return false;
+        }
+      }
+      return true;
+    });
+  }, [reports, cashierFilter, singleDate, startDate, endDate]);
 
   const handlePrint = (report: CashierReportRecord) => {
     const printWindow = window.open("", "_blank");
@@ -142,8 +197,8 @@ export default function CashierReports() {
             </thead>
             <tbody>
               ${(report.items || [])
-                .map(
-                  (item) => `
+        .map(
+          (item) => `
                 <tr>
                   <td>${item.name}</td>
                   <td>${item.quantity}</td>
@@ -155,8 +210,8 @@ export default function CashierReports() {
                   <td>${item.total_amount.toLocaleString()} Birr</td>
                 </tr>
               `,
-                )
-                .join("")}
+        )
+        .join("")}
             </tbody>
           </table>
           <div class="totals">
@@ -181,7 +236,7 @@ export default function CashierReports() {
   return (
     <div className="space-y-6">
       <div
-        className="rounded-3xl border p-4 sm:p-6"
+        className="rounded-3xl border p-4 sm:p-6 space-y-4"
         style={{ borderColor: "var(--border)", backgroundColor: "var(--card)" }}
       >
         <div className="flex flex-wrap items-center justify-between gap-4">
@@ -201,32 +256,171 @@ export default function CashierReports() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <label
-              className="text-xs uppercase tracking-wider"
-              style={{ color: "var(--muted-foreground)" }}
+          <div className="flex items-center gap-3 flex-wrap">
+            <button
+              type="button"
+              onClick={() => setShowDateFilter((prev) => !prev)}
+              className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all shadow-md flex items-center gap-1.5 shrink-0 ${showDateFilter
+                ? "bg-[#c9a84c] text-[#0f1117] hover:bg-[#b8973b]"
+                : (singleDate || startDate || endDate)
+                  ? "bg-[#c9a84c]/20 text-[#c9a84c] border border-[#c9a84c]/40 hover:bg-[#c9a84c]/30"
+                  : "bg-[var(--secondary)] text-[var(--foreground)] border border-[var(--border)] hover:bg-white/5"
+                }`}
             >
-              Filter Cashier:
-            </label>
-            <select
-              value={cashierFilter}
-              onChange={(e) => setCashierFilter(e.target.value)}
-              className="rounded-xl px-3 py-2 text-sm outline-none"
-              style={{
-                backgroundColor: "var(--secondary)",
-                border: "1px solid var(--border)",
-                color: "var(--foreground)",
-              }}
-            >
-              <option value="all">All Cashiers ({reports.length})</option>
-              {uniqueCashiers.map((name) => (
-                <option key={name} value={name}>
-                  {name}
-                </option>
-              ))}
-            </select>
+              <span>📅</span>
+              <span>{showDateFilter ? "Hide Date Filter" : "Filter by Date"}</span>
+              {(singleDate || startDate || endDate) && (
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse ml-0.5" />
+              )}
+            </button>
+
+            <div className="flex items-center gap-2">
+              <label
+                className="text-xs uppercase tracking-wider"
+                style={{ color: "var(--muted-foreground)" }}
+              >
+                Cashier:
+              </label>
+              <select
+                value={cashierFilter}
+                onChange={(e) => setCashierFilter(e.target.value)}
+                className="rounded-xl px-3 py-2 text-sm outline-none"
+                style={{
+                  backgroundColor: "var(--secondary)",
+                  border: "1px solid var(--border)",
+                  color: "var(--foreground)",
+                }}
+              >
+                <option value="all">All Cashiers ({reports.length})</option>
+                {uniqueCashiers.map((name) => (
+                  <option key={name} value={name}>
+                    {name}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
+
+        {/* Active Filter Summary Bar when Date Filter box is closed */}
+        {!showDateFilter && (singleDate || startDate || endDate) && (
+          <div className="px-4 py-2.5 rounded-xl flex items-center justify-between text-xs bg-[#c9a84c]/10 border border-[#c9a84c]/30 text-[#e8e6e1]">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-[#c9a84c] font-bold">📅 Date Filter Active:</span>
+              <span className="font-semibold">
+                {singleDate
+                  ? `Date: ${singleDate}`
+                  : startDate && endDate
+                    ? `${startDate} to ${endDate}`
+                    : startDate
+                      ? `From ${startDate}`
+                      : `Up to ${endDate}`}
+              </span>
+              <span className="text-[#7a8090]">
+                ({filteredReports.length} report{filteredReports.length === 1 ? "" : "s"} found)
+              </span>
+            </div>
+            <div className="flex items-center gap-3 shrink-0">
+              <button
+                type="button"
+                onClick={() => setShowDateFilter(true)}
+                className="text-[#c9a84c] hover:underline text-xs font-semibold"
+              >
+                Edit Filter
+              </button>
+              <button
+                type="button"
+                onClick={() => setDatePreset("clear")}
+                className="text-red-400 hover:underline text-xs font-semibold"
+              >
+                Clear Filter
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Expandable Date Filter Controls Box */}
+        {showDateFilter && (
+          <div
+            className="p-4 rounded-2xl space-y-3 transition-all"
+            style={{
+              backgroundColor: "var(--secondary)",
+              border: "1px solid var(--border)",
+            }}
+          >
+            <div className="flex flex-wrap items-center gap-4 justify-between">
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-[#7a8090] uppercase tracking-wider block">
+                    Select Date
+                  </label>
+                  <input
+                    type="date"
+                    value={singleDate}
+                    onChange={(e) => {
+                      setSingleDate(e.target.value);
+                      setStartDate("");
+                      setEndDate("");
+                    }}
+                    className="w-full min-h-[38px] px-3.5 py-2 rounded-xl text-xs font-medium outline-none"
+                    style={{
+                      backgroundColor: "var(--card)",
+                      border: "1px solid var(--border)",
+                      color: "var(--foreground)",
+                      colorScheme: "dark",
+                    }}
+                  />
+                </div>
+
+                <div className="flex items-center gap-1.5 self-end pb-0.5">
+                  <button
+                    type="button"
+                    onClick={() => setDatePreset("today")}
+                    className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all border ${singleDate === new Date().toISOString().split("T")[0]
+                      ? "bg-[#c9a84c] text-[#0f1117] border-[#c9a84c] font-bold"
+                      : "text-[#e8e6e1] hover:bg-white/5 border-white/10"
+                      }`}
+                  >
+                    Today
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDatePreset("thisWeek")}
+                    className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all border ${startDate && !singleDate
+                      ? "bg-[#c9a84c]/20 text-[#c9a84c] border-[#c9a84c]/40 font-semibold"
+                      : "text-[#e8e6e1] hover:bg-white/5 border-white/10"
+                      }`}
+                  >
+                    This Week
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDatePreset("thisMonth")}
+                    className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all border ${startDate && !singleDate
+                      ? "bg-[#c9a84c]/20 text-[#c9a84c] border-[#c9a84c]/40 font-semibold"
+                      : "text-[#e8e6e1] hover:bg-white/5 border-white/10"
+                      }`}
+                  >
+                    This Month
+                  </button>
+                  {(singleDate || startDate || endDate) && (
+                    <button
+                      type="button"
+                      onClick={() => setDatePreset("clear")}
+                      className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-red-400 hover:bg-red-500/10 border border-red-500/20"
+                    >
+                      Reset
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="text-xs text-[#7a8090]">
+                Showing <strong className="text-[#c9a84c]">{filteredReports.length}</strong> of {reports.length} reports
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div
