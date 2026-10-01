@@ -102,7 +102,13 @@ export default function NightBarSales() {
         getBarItems(),
         getBarNightSales(),
       ]);
-      setBarItems(itemsData);
+      const sortedItems = [...itemsData].sort((a, b) => {
+        if (a.created_at && b.created_at) {
+          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        }
+        return 0;
+      });
+      setBarItems(sortedItems);
       setSalesHistory(historyData);
     } catch (err) {
       console.error("Error loading night bar sales data:", err);

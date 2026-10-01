@@ -935,7 +935,7 @@ export async function getBarItems(): Promise<BarItemRecord[]> {
   const { data, error } = await supabase
     .from("bar_items")
     .select("*")
-    .order("name", { ascending: true });
+    .order("created_at", { ascending: true });
 
   if (error) throw error;
 
