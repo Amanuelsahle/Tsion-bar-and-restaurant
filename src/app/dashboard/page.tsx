@@ -18,6 +18,7 @@ import CashierCheckout from "../../components/cashier/CashierCheckout";
 import CashierReports from "../../components/cashier/CashierReports";
 import CashierAnalytics from "../../components/cashier/CashierAnalytics";
 import HRManagement from "../../components/hr-management/HRManagement";
+import DashboardLoader from "../../components/DashboardLoader";
 import {
   createDistribution,
   createEmployee,
@@ -695,14 +696,7 @@ export default function DashboardPage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-dvh flex items-center justify-center bg-[#0f1117] text-[#e8e6e1]">
-        <div className="text-center">
-          <div className="mx-auto mb-3 h-10 w-10 animate-spin rounded-full border-2 border-[#c9a84c] border-t-transparent" />
-          <p className="text-sm text-[#7a8090]">Loading your dashboard…</p>
-        </div>
-      </div>
-    );
+    return <DashboardLoader role={role} />;
   }
 
   return (

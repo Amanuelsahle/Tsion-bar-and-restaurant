@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import {
   createBono,
   deleteBono,
@@ -30,6 +30,7 @@ const emptyForm: BonoFormState = {
 };
 
 export default function BonoManagement() {
+  const formRef = useRef<HTMLDivElement>(null);
   const [bonos, setBonos] = useState<BonoRecord[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<BonoFormState>(emptyForm);
@@ -104,6 +105,9 @@ export default function BonoManagement() {
       setError(null);
     } else {
       setShowForm(true);
+      setTimeout(() => {
+        formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 50);
     }
   };
 
@@ -163,6 +167,9 @@ export default function BonoManagement() {
       category: bono.category,
       isActive: bono.is_active,
     });
+    setTimeout(() => {
+      formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 50);
   };
 
   const handleDelete = async (id: string) => {
@@ -321,6 +328,7 @@ export default function BonoManagement() {
 
       {showForm ? (
         <div
+          ref={formRef}
           className="rounded-3xl border p-6 relative"
           style={{
             borderColor: "var(--border)",
